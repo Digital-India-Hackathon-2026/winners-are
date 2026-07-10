@@ -270,40 +270,58 @@ class DocumentScannerEngine:
         embedded_count = 0
         page_count = 0
 
+        # Check for JavaScript & Auto-Action via raw byte signatures
+        js_found = b"/JS" in pdf_bytes or b"/JavaScript" in pdf_bytes
+        auto_action = b"/AA" in pdf_bytes or b"/OpenAction" in pdf_bytes
+
+        # Attempt to use PyMuPDF first, fallback to pypdf
+        doc_parsed = False
+        full_text = ""
         try:
             import fitz  # PyMuPDF
             doc = fitz.open(stream=pdf_bytes, filetype="pdf")
             page_count = doc.page_count
-
-            # Extract all text for URL hunting
-            full_text = ""
             for page in doc:
-                full_text += page.get_text()
-
-            urls = _extract_urls_from_text(full_text)
-
-            # Check for JavaScript
-            js_found = doc.is_pdf and "/JS" in full_text or "/JavaScript" in full_text
-            auto_action = "/AA" in full_text or "/OpenAction" in full_text
-
-            # Check for embedded files
+                full_text += page.get_text() or ""
             embedded_count = doc.embfile_count()
             embedded_files = embedded_count > 0
-
-            if js_found:
-                signals.append("PDF contains JavaScript — execution risk")
-            if auto_action:
-                signals.append("PDF has auto-action triggers (/OpenAction or /AA)")
-            if embedded_files:
-                signals.append(f"PDF contains {embedded_count} embedded file(s)")
-
             doc.close()
+            doc_parsed = True
+        except Exception as py_mupdf_err:
+            print(f"[DOC-SCANNER] PyMuPDF not available or failed: {py_mupdf_err}. Falling back to pypdf.")
 
-        except ImportError:
-            signals.append("PyMuPDF not available — PDF deep scan skipped")
-        except Exception as e:
-            print(f"[DOC-SCANNER] PDF analysis error: {e}")
-            signals.append(f"PDF analysis error: {str(e)[:80]}")
+        if not doc_parsed:
+            try:
+                from pypdf import PdfReader
+                reader = PdfReader(io.BytesIO(pdf_bytes))
+                page_count = len(reader.pages)
+                for page in reader.pages:
+                    full_text += page.extract_text() or ""
+                
+                # Check for embedded files via /Names /EmbeddedFiles
+                try:
+                    catalog = reader.trailer.get("/Root", {})
+                    names = catalog.get("/Names", {})
+                    emb_files = names.get("/EmbeddedFiles", {})
+                    if emb_files:
+                        embedded_count = len(emb_files.get("/Names", [])) // 2
+                        embedded_files = embedded_count > 0
+                except Exception:
+                    pass
+                
+                doc_parsed = True
+            except Exception as pypdf_err:
+                signals.append(f"PDF parsing engine failure: {pypdf_err}")
+                full_text = ""
+
+        urls = _extract_urls_from_text(full_text)
+
+        if js_found:
+            signals.append("PDF contains JavaScript — execution risk")
+        if auto_action:
+            signals.append("PDF has auto-action triggers (/OpenAction or /AA)")
+        if embedded_files:
+            signals.append(f"PDF contains {embedded_count} embedded file(s)")
 
         url_analysis = [_analyze_url(u) for u in urls[:20]]
         suspicious = [a["url"] for a in url_analysis if a["risk"] in ("HIGH", "MEDIUM")]

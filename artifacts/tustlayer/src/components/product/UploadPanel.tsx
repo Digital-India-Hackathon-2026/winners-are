@@ -58,9 +58,9 @@ export function UploadPanel({
         >
           <div className="upload-dropzone-icon">↑</div>
           <p>
-            <strong>Click to upload</strong> or drag and drop
+            <strong>Drop transaction proof</strong> or click to upload
           </p>
-          <div className="format-hint">PNG, JPG, JPEG, PDF</div>
+          <div className="format-hint">Supports payment screenshots, PDFs, & QR codes</div>
           <input
             type="file"
             ref={fileInputRef}
@@ -73,7 +73,7 @@ export function UploadPanel({
 
         {/* Try with sample receipt UX link */}
         <div style={{ marginTop: "14px", textAlign: "center", marginBottom: "8px" }}>
-          <span style={{ fontSize: "0.74rem", color: "var(--foreground-dim)" }}>No screenshot handy? </span>
+          <span style={{ fontSize: "0.74rem", color: "var(--foreground-dim)" }}>Want to inspect right now? </span>
           <button 
             type="button"
             onClick={(e) => {
@@ -92,7 +92,7 @@ export function UploadPanel({
               padding: 0
             }}
           >
-            Load Demo Screenshot
+            One-Click Interactive Demo
           </button>
         </div>
 

@@ -254,7 +254,7 @@ export function ResultsPanel({ results, isScanning }: ResultsPanelProps) {
   if (!results) {
     return (
       <div className="product-panel results-panel" style={{ display: "grid", placeItems: "center", minHeight: "300px", padding: "20px", textAlign: "center", color: "var(--foreground-dim)" }}>
-        <p>Upload any transaction proof (image or PDF) or scan a QR code to see automated forensic results.</p>
+        <p>Upload a transaction screenshot, bank PDF statement, or payment QR code to generate a real-time integrity and fraud risk score report.</p>
       </div>
     );
   }
