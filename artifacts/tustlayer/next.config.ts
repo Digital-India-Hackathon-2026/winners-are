@@ -10,14 +10,8 @@ const nextConfig: NextConfig = {
         },
       ];
     }
-    return [
-      {
-        source: "/api/:path*",
-        destination: "/api",
-      },
-    ];
+    return [];
   },
 };
 
 export default nextConfig;
-
