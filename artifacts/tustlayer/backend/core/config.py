@@ -16,7 +16,7 @@ class Settings(BaseSettings):
 
     # v2.0 Model IDs
     OCR_MODEL: str = os.getenv("OCR_MODEL") or "nvidia/cosmos3-nano-reasoner"
-    VISUAL_AI_MODEL: str = os.getenv("VISUAL_AI_MODEL") or "nvidia/nemotron-nano-12b-v2-vl"
+    VISUAL_AI_MODEL: str = os.getenv("VISUAL_AI_MODEL") or "nvidia/cosmos3-nano-reasoner"
     REASONING_MODEL: str = os.getenv("REASONING_MODEL") or "meta/llama-3.3-70b-instruct"
     FALLBACK_MODEL: str = os.getenv("FALLBACK_MODEL") or "meta/llama-3.1-8b-instruct"
     DEEPFAKE_MODEL: str = os.getenv("DEEPFAKE_MODEL") or "hive/deepfake-image-detection"
