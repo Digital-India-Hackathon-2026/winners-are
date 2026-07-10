@@ -39,7 +39,7 @@ class TransactionRequest(BaseModel):
     sender_id: str
     receiver_id: str
     timestamp: str
-    location: str
+    location: Optional[str] = "unknown"
     device_id: Optional[str] = None
     transaction_count_1h: Optional[int] = None
 
