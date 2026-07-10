@@ -69,8 +69,14 @@ class AppForensicsService:
         return deterministic_result
 
     async def _run_ai_branding(self, image_bytes: bytes) -> dict:
-        """Run NemotronNano12BVL branding_auth task only. Returns raw dict or {}."""
+        """Run AI branding validation via Groq (preferred) or Nemotron VL."""
         try:
+            from backend.core.config import settings
+            if settings.GROQ_API_KEY:
+                from backend.integrations.groq_client import GroqVisionProvider
+                provider = GroqVisionProvider()
+                return await provider.verify_branding(image_bytes)
+
             from backend.integrations.nvidia_client import NemotronNano12BVLProvider
             provider = NemotronNano12BVLProvider()
             result = await provider._run_task(

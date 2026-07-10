@@ -52,6 +52,43 @@ class GroqVisionProvider(VisionProvider):
     async def detect_anomalies(self, image_bytes: bytes) -> List[str]:
         return []
 
+    async def verify_branding(self, image_bytes: bytes) -> dict:
+        b64, mime = _encode_image(image_bytes)
+        system_prompt = (
+            "You are a payment app branding authentication expert. "
+            "Analyze if the UI branding (logo, colors, layout) matches an authentic known payment app. "
+            "Return ONLY JSON: {\"app_name\": \"string\", \"branding_match\": bool, \"confidence\": 0.0-1.0, \"explanation\": \"string\"}"
+        )
+        payload = {
+            "model": self.model,
+            "messages": [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": [
+                    {"type": "text", "text": "Analyze the branding and authenticity of this UPI payment screenshot."},
+                    {"type": "image_url", "image_url": {"url": f"data:{mime};base64,{b64}"}}
+                ]}
+            ],
+            "max_tokens": 512,
+            "temperature": 0.1,
+        }
+        headers = {
+            "Authorization": f"Bearer {settings.GROQ_API_KEY}",
+            "Content-Type": "application/json"
+        }
+        try:
+            start = time.time()
+            print(f"[GROQ-BRANDING] Requesting '{self.model}'...")
+            response = await self.client.post(self.api_url, json=payload, headers=headers)
+            response.raise_for_status()
+            elapsed = int((time.time() - start) * 1000)
+            print(f"[GROQ-BRANDING] Response in {elapsed}ms")
+            content = response.json()["choices"][0]["message"]["content"]
+            parsed = _extract_json_from_content(content)
+            return parsed or {}
+        except Exception as e:
+            print(f"[GROQ-BRANDING] FAILED: {e}")
+            return {}
+
 
 class GroqReasoningProvider(ReasoningProvider):
     """Primary reasoning logic provider using Groq API."""
