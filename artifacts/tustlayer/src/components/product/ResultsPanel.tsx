@@ -79,7 +79,7 @@ export type ScanResponse = {
 } | null;
 
 type ResultsPanelProps = {
-  results: ScanResponse;
+  results: any;
   isScanning?: boolean;
 };
 
