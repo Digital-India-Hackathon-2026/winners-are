@@ -9,7 +9,7 @@ def _risk_emoji(level: str) -> str:
 
 def format_screenshot_result(data: dict) -> str:
     ts = data.get("trust_score_data", {}) or {}
-    ocr = (data.get("ocr_data", {}) or {}).get("extracted_fields", {}) or {}
+    ocr = (data.get("ocr_data", {}) or {}).get("fields", {}) or {}
     score = ts.get("trust_score", 0)
     risk = ts.get("risk_level", "UNKNOWN")
     verdict = ts.get("verdict") or ("Likely Authentic" if score >= 70 else "Suspicious")
