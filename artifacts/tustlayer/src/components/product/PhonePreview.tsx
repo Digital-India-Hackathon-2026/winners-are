@@ -65,7 +65,7 @@ export function PhonePreview({
             
             {uploadedImage ? (
               /* Active Upload / Preview State inside the Phone screen */
-              <div style={{ position: "relative", width: "100%", height: "100%", display: "flex", flexDirection: "column", padding: "10px 0 0" }}>
+              <div style={{ position: "relative", width: "100%", height: "100%", display: "flex", flexDirection: "column", padding: "10px 14px 10px" }}>
                 <div style={{ position: "relative", flexGrow: 1, height: 0, minHeight: 0, overflow: "hidden", borderRadius: "12px", background: "rgba(0,0,0,0.35)", border: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "center" }}>
                   {uploadedImage === "pdf-placeholder" ? (
                     <div style={{
