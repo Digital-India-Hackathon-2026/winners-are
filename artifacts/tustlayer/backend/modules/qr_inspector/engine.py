@@ -19,6 +19,10 @@ VALID_UPI_HANDLES = {
     "@centralbank", "@csbpay", "@dcb", "@jkb",
     "@kvb", "@lvb", "@scb", "@unionbank",
     "@zoicici", "@freecharge", "@airtelpaymentsbank",
+    # Paytm and Partner handles
+    "@pthdfc", "@ptaxis", "@ptsbi", "@ptyes", "@superyes",
+    # WhatsApp UPI handles
+    "@waaxis", "@wahdfc", "@wasbi",
 }
 
 
