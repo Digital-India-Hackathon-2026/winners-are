@@ -134,10 +134,7 @@ class TrustScoreEngine:
                 score = CAP_EXIF_EDITING
                 triggered.append(f"Editing software in EXIF ({data.exif_software_name or 'unknown'}) → cap {CAP_EXIF_EDITING}")
 
-        if data.exif_missing:
-            if score > CAP_MISSING_EXIF:
-                score = CAP_MISSING_EXIF
-                triggered.append(f"No EXIF metadata found (suspicious for screenshot) → cap {CAP_MISSING_EXIF}")
+
 
         if data.ela_score > 0.8:
             if score > CAP_ELA_ANOMALY:
