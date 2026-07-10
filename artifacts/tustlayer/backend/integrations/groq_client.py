@@ -39,6 +39,8 @@ class GroqVisionProvider(VisionProvider):
             start = time.time()
             print(f"[GROQ-VISION] Requesting '{self.model}'...")
             response = await self.client.post(self.api_url, json=payload, headers=headers)
+            if response.status_code != 200:
+                print(f"[GROQ-VISION] ERROR RESPONSE: {response.text}")
             response.raise_for_status()
             elapsed = int((time.time() - start) * 1000)
             print(f"[GROQ-VISION] Response in {elapsed}ms")
@@ -79,6 +81,8 @@ class GroqVisionProvider(VisionProvider):
             start = time.time()
             print(f"[GROQ-BRANDING] Requesting '{self.model}'...")
             response = await self.client.post(self.api_url, json=payload, headers=headers)
+            if response.status_code != 200:
+                print(f"[GROQ-BRANDING] ERROR RESPONSE: {response.text}")
             response.raise_for_status()
             elapsed = int((time.time() - start) * 1000)
             print(f"[GROQ-BRANDING] Response in {elapsed}ms")

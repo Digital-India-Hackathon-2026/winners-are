@@ -49,10 +49,28 @@ def _extract_json_from_content(content: str) -> Optional[Dict]:
 
 
 def _encode_image(image_bytes: bytes) -> tuple[str, str]:
-    """Encode image to base64 and detect MIME type."""
-    mime = "image/png" if image_bytes[:4] == b"\x89PNG" else "image/jpeg"
-    b64 = base64.b64encode(image_bytes).decode("utf-8")
-    return b64, mime
+    """Compress image (to max 1024x1024 JPEG) and encode to base64."""
+    import io
+    from PIL import Image
+    try:
+        img = Image.open(io.BytesIO(image_bytes))
+        if img.mode != "RGB":
+            img = img.convert("RGB")
+        max_size = 1024
+        if img.width > max_size or img.height > max_size:
+            img.thumbnail((max_size, max_size), Image.Resampling.LANCZOS)
+        
+        buf = io.BytesIO()
+        img.save(buf, format="JPEG", quality=80)
+        compressed_bytes = buf.getvalue()
+        
+        b64 = base64.b64encode(compressed_bytes).decode("utf-8")
+        return b64, "image/jpeg"
+    except Exception as e:
+        print(f"[IMAGE-ENCODE] PIL compression failed, falling back to raw: {e}")
+        mime = "image/png" if image_bytes[:4] == b"\x89PNG" else "image/jpeg"
+        b64 = base64.b64encode(image_bytes).decode("utf-8")
+        return b64, mime
 
 
 # ─── NvidiaOCRExtractor (PRIMARY OCR — Nemotron OCR v2) ──────────────────────
