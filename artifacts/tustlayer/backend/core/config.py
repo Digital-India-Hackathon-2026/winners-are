@@ -30,7 +30,6 @@ class Settings(BaseSettings):
     VIRUSTOTAL_API_KEY: str = os.getenv("VIRUSTOTAL_API_KEY") or ""
 
     GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY") or ""
-    GEMINI_API_KEYS: str = os.getenv("GEMINI_API_KEYS") or ""
 
     # Groq API keys and models
     GROQ_API_KEY: str = os.getenv("GROQ_API_KEY") or ""

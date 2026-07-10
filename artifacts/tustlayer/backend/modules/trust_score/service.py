@@ -19,16 +19,13 @@ class FinalDecisionAssembler:
         self.engine = TrustScoreEngine()
         self.escalation = RiskEscalationLayer()
         from backend.core.config import settings
-        if settings.GEMINI_API_KEY or settings.GEMINI_API_KEYS:
-            from backend.integrations.gemini_client import GeminiReasoningProvider
-            self.reasoner = GeminiReasoningProvider()
-        elif settings.GROQ_API_KEY:
+        if settings.GROQ_API_KEY:
             from backend.integrations.groq_client import GroqReasoningProvider
-            self.reasoner = GroqReasoningProvider()
+            self.qwen = GroqReasoningProvider()
         else:
-            self.reasoner = LlamaReasoningProvider()
+            self.qwen = LlamaReasoningProvider()
         self.ai_orchestrator = AIReasoningOrchestrator(
-            primary=self.reasoner,
+            primary=self.qwen,
             fallback=PhiReasoningProvider()
         )
         self.reasoning = ConfidenceReasoningGenerator(self.ai_orchestrator)
