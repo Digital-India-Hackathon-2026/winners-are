@@ -347,49 +347,7 @@ export function ResultsPanel({ results, isScanning }: ResultsPanelProps) {
         </div>
       )}
 
-      {/* ── VPA Validation ── */}
-      {vpa_validation_data && (
-        <div className="result-block">
-          <h4 className="result-block-title">VPA Live Lookup</h4>
-          <div className="result-row">
-            <span className="label">UPI ID</span>
-            <span className="value" style={{ fontFamily: "var(--font-mono)", fontSize: "0.72rem" }}>
-              {vpa_validation_data.upi_id || "N/A"}
-            </span>
-          </div>
-          <div className="result-row">
-            <span className="label">Handle Valid</span>
-            <span className={`value ${vpa_validation_data.vpa_handle_valid ? "success" : "danger"}`}>
-              {vpa_validation_data.vpa_handle_valid ? "✓ YES" : "✕ NO"}
-            </span>
-          </div>
-          <div className="result-row">
-            <span className="label">VPA Exists</span>
-            <span className={`value ${vpa_validation_data.vpa_exists === true ? "success" : vpa_validation_data.vpa_exists === false ? "danger" : ""}`}>
-              {vpa_validation_data.vpa_exists === true ? "✓ Registered" : vpa_validation_data.vpa_exists === false ? "✕ Not Found" : "Unverified"}
-            </span>
-          </div>
-          {vpa_validation_data.registered_name && (
-            <div className="result-row">
-              <span className="label">Registered Name</span>
-              <span className="value">{vpa_validation_data.registered_name}</span>
-            </div>
-          )}
-          {vpa_validation_data.name_match != null && (
-            <div className="result-row">
-              <span className="label">Name Match</span>
-              <span className={`value ${vpa_validation_data.name_match ? "success" : "warn"}`}>
-                {vpa_validation_data.name_match ? "✓ Matches" : "⚠ Mismatch"}
-              </span>
-            </div>
-          )}
-          {vpa_validation_data.error && (
-            <p style={{ fontSize: "0.72rem", color: "var(--foreground-dim)", marginTop: "6px", fontStyle: "italic" }}>
-              Note: {vpa_validation_data.error}
-            </p>
-          )}
-        </div>
-      )}
+
 
       {/* ── Deepfake Detection ── */}
       {deepfake_data && (
