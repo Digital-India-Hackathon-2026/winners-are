@@ -205,47 +205,50 @@ export function ResultsPanel({ results, isScanning }: ResultsPanelProps) {
     ];
 
     return (
-      <div className="product-panel results-panel" style={{ padding: "32px", display: "flex", flexDirection: "column", gap: "20px" }}>
-        <div className="product-panel-header" style={{ borderBottom: "none", marginBottom: "0px" }}>
+      <div className="product-panel results-panel">
+        <div className="product-panel-header">
           <span className="dot" style={{ backgroundColor: "var(--signal)", boxShadow: "0 0 12px var(--signal)" }} />
           Active Scan Diagnostics
         </div>
-        <div style={{ display: "grid", placeItems: "center", margin: "14px 0" }}>
-          <div className="radar-scanner">
-            <div className="radar-sweep" />
-            <div className="radar-ping" />
-            <span style={{
-              fontFamily: "var(--font-mono)", fontSize: "0.74rem", fontWeight: 950,
-              color: "var(--foreground)", zIndex: 6,
-              background: "var(--bg)", border: "1px solid var(--border-active)", borderRadius: "999px",
-              padding: "6px 14px", boxShadow: "0 4px 12px rgba(var(--shadow-rgb), 0.5), 0 0 10px rgba(219,255,74,0.15)",
-              textShadow: "0 0 8px rgba(255,255,255,0.3)"
-            }}>
-              {activeStep < 6 ? "RUNNING" : "RESOLVING"}
-            </span>
+        
+        <div className="results-panel-content" style={{ display: "flex", flexDirection: "column", gap: "20px", padding: "20px" }}>
+          <div style={{ display: "grid", placeItems: "center", margin: "10px 0" }}>
+            <div className="radar-scanner">
+              <div className="radar-sweep" />
+              <div className="radar-ping" />
+              <span style={{
+                fontFamily: "var(--font-mono)", fontSize: "0.74rem", fontWeight: 950,
+                color: "var(--foreground)", zIndex: 6,
+                background: "var(--bg)", border: "1px solid var(--border-active)", borderRadius: "999px",
+                padding: "6px 14px", boxShadow: "0 4px 12px rgba(var(--shadow-rgb), 0.5), 0 0 10px rgba(219,255,74,0.15)",
+                textShadow: "0 0 8px rgba(255,255,255,0.3)"
+              }}>
+                {activeStep < 6 ? "RUNNING" : "RESOLVING"}
+              </span>
+            </div>
           </div>
-        </div>
-        <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-          {steps.map((step, idx) => {
-            const isCompleted = idx < activeStep;
-            const isActive    = idx === activeStep;
-            const isPending   = idx > activeStep;
-            return (
-              <div key={idx}
-                className={`scanning-step ${isCompleted ? "completed" : isActive ? "active" : "pending"}`}
-                style={{ opacity: isPending ? 0.32 : 1 }}
-              >
-                <span className="step-icon">{step.icon}</span>
-                <div className="step-content">
-                  <strong>{step.title}</strong>
-                  <p>{step.desc}</p>
+          <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+            {steps.map((step, idx) => {
+              const isCompleted = idx < activeStep;
+              const isActive    = idx === activeStep;
+              const isPending   = idx > activeStep;
+              return (
+                <div key={idx}
+                  className={`scanning-step ${isCompleted ? "completed" : isActive ? "active" : "pending"}`}
+                  style={{ opacity: isPending ? 0.32 : 1 }}
+                >
+                  <span className="step-icon">{step.icon}</span>
+                  <div className="step-content">
+                    <strong>{step.title}</strong>
+                    <p>{step.desc}</p>
+                  </div>
+                  {isCompleted && <div className="step-checkmark">✓</div>}
+                  {isActive    && <div className="scanning-spinner" />}
+                  {isPending   && <div style={{ width: "10px", height: "10px", border: "1px solid var(--border)", borderRadius: "50%", alignSelf: "center", marginRight: "3px" }} />}
                 </div>
-                {isCompleted && <div className="step-checkmark">✓</div>}
-                {isActive    && <div className="scanning-spinner" />}
-                {isPending   && <div style={{ width: "10px", height: "10px", border: "1px solid var(--border)", borderRadius: "50%", alignSelf: "center", marginRight: "3px" }} />}
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
       </div>
     );
@@ -253,8 +256,17 @@ export function ResultsPanel({ results, isScanning }: ResultsPanelProps) {
 
   if (!results) {
     return (
-      <div className="product-panel results-panel" style={{ display: "grid", placeItems: "center", minHeight: "300px", padding: "20px", textAlign: "center", color: "var(--foreground-dim)" }}>
-        <p>Upload a transaction screenshot, bank PDF statement, or payment QR code to generate a real-time integrity and fraud risk score report.</p>
+      <div className="product-panel results-panel">
+        <div className="product-panel-header">
+          <span className="dot" style={{ background: "rgba(255,255,255,0.2)" }} /> Verification Status
+        </div>
+        <div className="results-panel-content" style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px 24px", textAlign: "center", color: "var(--foreground-dim)", gap: "16px", height: "100%" }}>
+          <div style={{ fontSize: "2.5rem", opacity: 0.75 }}>🛡️</div>
+          <strong style={{ fontSize: "0.92rem", color: "var(--foreground)" }}>Ready for Forensic Scan</strong>
+          <p style={{ fontSize: "0.78rem", lineHeight: 1.5, margin: 0, maxWidth: "290px", color: "var(--foreground-muted)" }}>
+            Upload a transaction screenshot, bank PDF statement, or payment QR code inside the mockup screen to generate a real-time risk assessment report.
+          </p>
+        </div>
       </div>
     );
   }

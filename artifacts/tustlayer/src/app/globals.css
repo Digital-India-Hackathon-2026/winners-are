@@ -395,7 +395,7 @@ body {
 /* Phone shell */
 .phone-shell {
   position: relative;
-  width: clamp(240px, 22vw, 340px);
+  height: clamp(380px, 60vh, 520px);
   aspect-ratio: 9 / 19.4;
   border: 1px solid rgba(255, 248, 238, 0.16);
   border-radius: var(--radius-phone);
@@ -406,7 +406,7 @@ body {
     0 44px 90px rgba(var(--shadow-rgb), 0.7),
     0 0 60px rgba(255, 77, 46, 0.12),
     inset 0 0 0 7px rgba(255, 255, 255, 0.03);
-  padding: clamp(8px, 1vw, 14px);
+  padding: 10px;
   transform-style: preserve-3d;
   will-change: transform;
 }
@@ -422,7 +422,7 @@ body {
     radial-gradient(circle at 64% 18%, rgba(219, 255, 74, 0.1), transparent 28%),
     var(--phone-screen-grad);
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
-  padding: clamp(16px, 1.6vw, 24px);
+  padding: 14px;
 }
 
 .phone-notch {
@@ -1263,7 +1263,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 32px;
+  padding: 12px;
 }
 
 .preview-phone-glow {
