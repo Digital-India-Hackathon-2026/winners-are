@@ -22,8 +22,7 @@ export function Navigation() {
       <div className="nav-links">
         <Link href="/#scam-reality">The Problem</Link>
         <Link href="/#forensic-scan">How It Works</Link>
-        <Link href="/product/qr" className="nav-tool-link">QR Inspector</Link>
-        <Link href="/product/document" className="nav-tool-link">Doc Scanner</Link>
+        <Link href="/product" className="nav-tool-link">Unified Scanner</Link>
         
         {mounted && (
           <button
