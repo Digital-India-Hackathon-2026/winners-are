@@ -1079,9 +1079,9 @@ body {
 
 .product-layout {
   display: grid;
-  grid-template-columns: 330px 1fr 400px;
-  gap: 24px;
-  max-width: 1440px;
+  grid-template-columns: 380px 1fr;
+  gap: 32px;
+  max-width: 1000px;
   margin: 0 auto;
   padding: 16px clamp(16px, 3vw, 32px);
   height: 100%;
@@ -1089,10 +1089,10 @@ body {
   box-sizing: border-box;
 }
 
-@media (max-width: 1200px) {
+@media (max-width: 900px) {
   .product-layout {
     grid-template-columns: 1fr;
-    gap: 20px;
+    gap: 24px;
     height: auto;
     max-height: none;
   }

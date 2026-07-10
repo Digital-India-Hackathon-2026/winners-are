@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { UploadPanel } from "@/components/product/UploadPanel";
 import { PhonePreview } from "@/components/product/PhonePreview";
 import { ResultsPanel } from "@/components/product/ResultsPanel";
 import { useLenisScroll } from "@/hooks/useLenisScroll";
@@ -44,6 +43,14 @@ export default function ProductPage() {
     }
   };
 
+  const handleClear = () => {
+    setSelectedFile(null);
+    setUploadedImage(null);
+    setUploadedName("");
+    setScanResults(null);
+    setErrorMsg(null);
+  };
+
   const handleScan = async () => {
     if (!selectedFile && !uploadedImage) return;
     setIsScanning(true);
@@ -61,7 +68,7 @@ export default function ProductPage() {
         const uploadResponse = await fetch(uploadUrl, {
           method: "POST",
           headers: {
-            "Authorization": `Bearer ${supabaseKey}`,
+            "Authorization": `Bearer {supabaseKey}`,
             "apikey": supabaseKey,
             "Content-Type": selectedFile.type,
             "x-upsert": "true"
@@ -137,17 +144,16 @@ export default function ProductPage() {
   return (
     <div className="product-page">
       <div className="product-layout">
-        <UploadPanel
-          onFileSelect={handleFileSelect}
+        <PhonePreview
           uploadedImage={uploadedImage}
           uploadedName={uploadedName}
-          onScan={handleScan}
           isScanning={isScanning}
-          hasResults={!!scanResults}
+          onFileSelect={handleFileSelect}
+          onScan={handleScan}
           onLoadDemo={handleLoadDemo}
+          onClear={handleClear}
           errorMsg={errorMsg}
         />
-        <PhonePreview uploadedImage={uploadedImage} isScanning={isScanning} />
         <ResultsPanel results={scanResults} isScanning={isScanning} />
       </div>
     </div>
