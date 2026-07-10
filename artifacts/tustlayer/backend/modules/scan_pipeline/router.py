@@ -75,3 +75,76 @@ async def stream_scan(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to start streaming pipeline."
         )
+
+
+@router.post("/unified")
+async def execute_unified_scan(
+    response: Response,
+    file: UploadFile = File(...),
+    service: ScanPipelineService = Depends(get_scan_pipeline_service),
+    context: dict = Depends(get_session_or_user)
+):
+    """
+    Unified entrypoint for all verification methods (image, PDF, QR).
+    Detects the file type and routes it dynamically to DocumentScannerService,
+    QRInspectorService, or the standard transaction image verification pipeline.
+    """
+    try:
+        filename = file.filename or ""
+        content_type = file.content_type or ""
+        
+        # Read a small chunk to check PDF magic bytes safely
+        header_chunk = await file.read(4)
+        is_pdf = "pdf" in content_type.lower() or filename.lower().endswith(".pdf") or header_chunk == b"%PDF"
+        
+        # Reset pointer for full read
+        await file.seek(0)
+        file_bytes = await file.read()
+        
+        # 1. PDF Document routing
+        if is_pdf:
+            from backend.modules.document_scanner.service import get_document_scanner_service
+            doc_service = get_document_scanner_service()
+            res = await doc_service.scan(file_bytes, content_type)
+            return {
+                "file_type": "pdf",
+                "document_result": res.model_dump(),
+                "anonymous_session_id": context.get("uid"),
+                "remaining_scans": context.get("remaining_scans", -1)
+            }
+            
+        # 2. Image routing: Check for QR codes first
+        from backend.modules.qr_inspector.service import get_qr_inspector_service
+        qr_service = get_qr_inspector_service()
+        qr_res = await qr_service.inspect(file_bytes)
+        
+        if qr_res.qr_found:
+            return {
+                "file_type": "qr",
+                "qr_result": qr_res.model_dump(),
+                "anonymous_session_id": context.get("uid"),
+                "remaining_scans": context.get("remaining_scans", -1)
+            }
+            
+        # 3. Standard screenshot transaction layout verification
+        scan_response = await service.execute_full_scan(file_bytes)
+        
+        if not context.get("is_authenticated"):
+            scan_response.anonymous_session_id = context.get("uid")
+        scan_response.remaining_scans = context.get("remaining_scans", -1)
+        
+        response.headers["X-Anonymous-Session-ID"] = context.get("uid")
+        response.headers["X-Remaining-Scans"] = str(context.get("remaining_scans", -1))
+        
+        return {
+            "file_type": "screenshot",
+            "screenshot_result": scan_response.model_dump(),
+            "anonymous_session_id": context.get("uid"),
+            "remaining_scans": context.get("remaining_scans", -1)
+        }
+    except Exception as e:
+        print(f"Unified Scanner Pipeline Error: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to execute unified scan pipeline: {str(e)}"
+        )

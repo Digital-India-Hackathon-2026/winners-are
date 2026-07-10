@@ -106,6 +106,30 @@ class AppForensicsEngine:
         except:
             return 999
 
+    def _check_font_alignments(self, img: Image.Image) -> str:
+        """Analyzes text line projections to detect visual alignment splicing anomalies."""
+        try:
+            import numpy as np
+            gray = img.convert("L")
+            w, h = gray.size
+            mid_y1, mid_y2 = int(h * 0.35), int(h * 0.8)
+            mid_crop = gray.crop((0, mid_y1, w, mid_y2))
+            
+            arr = np.array(mid_crop)
+            binary = arr < 127
+            horizontal_projection = np.sum(binary, axis=1)
+            
+            diffs = np.diff(horizontal_projection)
+            std_dev = float(np.std(diffs))
+            
+            if std_dev > 150.0:
+                print(f"[APP-FORENSICS] Baseline alignment check failed (std_dev={std_dev:.2f}) -> SUSPICIOUS")
+                return "SUSPICIOUS"
+            return "NORMAL"
+        except Exception as e:
+            print(f"[APP-FORENSICS] Alignment check skipped: {e}")
+            return "NORMAL"
+
     def analyze(self, image_bytes: bytes, raw_text: str, claimed_app: str = None) -> AppForensicsResult:
         try:
             # 1. Parse Image and crop solid border padding
@@ -241,7 +265,7 @@ class AppForensicsEngine:
             detected_app = "Unknown"
             logo_match = False
             layout_consistency = "HIGH"
-            font_consistency = "NORMAL"
+            font_consistency = self._check_font_alignments(img)
             suspected_clone = False
             authenticity_score = 0.95
             explanation = ""
@@ -452,6 +476,11 @@ class AppForensicsEngine:
                 if detected_app != "Unknown":
                     explanation += f" Layout signature ({layout_hash[:8]}...) varies from reference template."
                     layout_consistency = "MEDIUM"
+
+            # Apply baseline font consistency penalty
+            if font_consistency == "SUSPICIOUS":
+                authenticity_score = max(0.1, authenticity_score - 0.15)
+                explanation += " Suspicious vertical baseline text offsets detected."
 
             # Deduct points if aspect ratio is non-mobile
             if not is_mobile_ratio:

@@ -22,7 +22,7 @@ class QRInspectorService:
                 )
 
             # Analyze the first (primary) QR
-            analysis = self.engine.analyze_qr_data(qr_texts[0])
+            analysis = await self.engine.analyze_qr_data(qr_texts[0])
             all_signals = list(analysis["risk_signals"])
 
             multiple_qr = qr_count > 1

@@ -13,6 +13,47 @@ class DocumentScannerService:
         try:
             is_pdf = "pdf" in content_type.lower() or file_bytes[:4] == b"%PDF"
 
+            # Render PDF pages to images and run safety/nsfw classification
+            if is_pdf:
+                try:
+                    import fitz
+                    from backend.integrations.groq_client import GroqVisionProvider
+                    doc = fitz.open(stream=file_bytes, filetype="pdf")
+                    num_pages = len(doc)
+                    
+                    groq_vision = GroqVisionProvider()
+                    max_moderate_pages = min(num_pages, 5)
+                    for page_num in range(max_moderate_pages):
+                        page = doc.load_page(page_num)
+                        pix = page.get_pixmap(dpi=150)
+                        img_data = pix.tobytes("png")
+                        
+                        safety_res = await groq_vision.verify_page_safety(img_data)
+                        if not safety_res.get("is_safe", True):
+                            print(f"[DOC-SAFETY] Flagged NSFW content on page {page_num + 1}!")
+                            category = safety_res.get("flagged_category", "NSFW")
+                            explanation = f"Blocked: Content Policy Violation. Flagged category: '{category}' detected on Page {page_num + 1}."
+                            return DocumentThreatResult(
+                                success=False,
+                                document_type="pdf",
+                                page_count=num_pages,
+                                steganography_suspected=False,
+                                steganography_signals=[],
+                                urls_found=[],
+                                suspicious_urls=[],
+                                url_risk_level="HIGH",
+                                url_analysis=[],
+                                embedded_files_found=False,
+                                embedded_file_count=0,
+                                pdf_javascript_found=False,
+                                pdf_auto_action_found=False,
+                                risk_level="HIGH",
+                                risk_signals=[f"NSFW content violation on Page {page_num + 1}"],
+                                explanation=explanation,
+                            )
+                except Exception as safety_err:
+                    print(f"[DOC-SAFETY] Page moderation failed/skipped: {safety_err}")
+
             if is_pdf:
                 raw = self.engine.analyze_pdf(file_bytes)
             else:

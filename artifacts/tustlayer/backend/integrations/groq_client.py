@@ -114,6 +114,50 @@ class GroqVisionProvider(VisionProvider):
                 print(f"[GROQ-BRANDING] Model {model} failed: {e}")
         return {}
 
+    async def verify_page_safety(self, image_bytes: bytes) -> dict:
+        b64, mime = _encode_image(image_bytes)
+        system_prompt = (
+            "You are an automated content safety moderator. "
+            "Analyze the provided document page image for safety violations. Check for any explicit nudity, adult content, suggestive imagery, or severe violence. "
+            "Return ONLY JSON: {\"is_safe\": bool, \"flagged_category\": \"string\", \"explanation\": \"string\"}"
+        )
+        
+        headers = {
+            "Authorization": f"Bearer {settings.GROQ_API_KEY}",
+            "Content-Type": "application/json"
+        }
+        
+        for model in self.models:
+            payload = {
+                "model": model,
+                "messages": [
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": [
+                        {"type": "text", "text": "Analyze the safety of this document page."},
+                        {"type": "image_url", "image_url": {"url": f"data:{mime};base64,{b64}"}}
+                    ]}
+                ],
+                "max_tokens": 512,
+                "temperature": 0.1,
+            }
+            try:
+                start = time.time()
+                print(f"[GROQ-SAFETY] Requesting safety moderation on '{model}'...")
+                response = await self.client.post(self.api_url, json=payload, headers=headers)
+                if response.status_code != 200:
+                    print(f"[GROQ-SAFETY] Model {model} returned error: {response.text}")
+                    response.raise_for_status()
+                
+                elapsed = int((time.time() - start) * 1000)
+                print(f"[GROQ-SAFETY] Model {model} processed in {elapsed}ms")
+                content = response.json()["choices"][0]["message"]["content"]
+                parsed = _extract_json_from_content(content)
+                if parsed:
+                    return parsed
+            except Exception as e:
+                print(f"[GROQ-SAFETY] Model {model} failed: {e}")
+        return {"is_safe": True, "flagged_category": "none", "explanation": "Failed to run safety analysis."}
+
 
 class GroqReasoningProvider(ReasoningProvider):
     """Primary reasoning logic provider using Groq API."""

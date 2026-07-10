@@ -99,7 +99,7 @@ class QRInspectorEngine:
             print(f"[QR-INSPECTOR] PIL fallback failed: {e}")
         return [], 0
 
-    def analyze_qr_data(self, qr_text: str) -> dict:
+    async def analyze_qr_data(self, qr_text: str) -> dict:
         """
         Analyze a single decoded QR string.
         Returns dict with is_upi, payload, risk_signals.
@@ -158,8 +158,34 @@ class QRInspectorEngine:
                     risk_signals.append("No digital signature in UPI QR (unverified merchant)")
 
         elif re.match(r'https?://', qr_text, re.I):
+            import httpx
             suspicious_uri = True
             risk_signals.append(f"QR contains URL (not UPI): {qr_text[:80]}")
+            
+            try:
+                async with httpx.AsyncClient(timeout=4.0, follow_redirects=True) as client:
+                    response = await client.head(qr_text)
+                    final_url = str(response.url)
+                    
+                    if final_url != qr_text:
+                        print(f"[QR-INSPECTOR] Resolved redirect: {qr_text} -> {final_url}")
+                        risk_signals.append(f"QR redirects to: {final_url[:80]}")
+                    
+                    parsed_url = urlparse(final_url)
+                    domain = parsed_url.netloc.lower()
+                    
+                    trusted_domains = [
+                        "google.com", "gpay.app.goo.gl", "phonepe.com", "paytm.com", 
+                        "paytm.in", "cred.club", "bhimupi.org.in", "super.money", 
+                        "npci.org.in", "razorpay.com", "payu.in"
+                    ]
+                    
+                    is_trusted = any(domain.endswith(t) for t in trusted_domains)
+                    if not is_trusted:
+                        risk_signals.append(f"⚠ Untrusted destination domain: {domain}")
+            except Exception as redirect_err:
+                print(f"[QR-INSPECTOR] Failed to resolve redirects: {redirect_err}")
+                risk_signals.append(f"⚠ Failed to verify URL security destination.")
         else:
             risk_signals.append(f"Non-UPI QR content: {qr_text[:60]}")
 
