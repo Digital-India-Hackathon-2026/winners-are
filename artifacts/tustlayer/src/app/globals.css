@@ -415,6 +415,8 @@ body {
   position: relative;
   height: 100%;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
   border: 1px solid rgba(255, 248, 238, 0.08);
   border-radius: calc(var(--radius-phone) - 8px);
   background:
@@ -441,7 +443,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-top: 20px;
+  margin-top: 36px;
   padding: 0 16px;
   color: var(--foreground-muted);
   font-size: 0.62rem;
