@@ -553,7 +553,7 @@ export function ResultsPanel({ results, isScanning }: ResultsPanelProps) {
           )}
           {deepfake_data.signals?.length > 0 && (
             <ul className="signal-list">
-              {deepfake_data.signals.slice(0, 4).map((s, i) => (
+              {deepfake_data.signals.slice(0, 4).map((s: string, i: number) => (
                 <li key={i}>{s}</li>
               ))}
             </ul>
@@ -651,7 +651,7 @@ export function ResultsPanel({ results, isScanning }: ResultsPanelProps) {
           {(trust_score_data.confidence_reasoning.length > 0
             ? trust_score_data.confidence_reasoning
             : ["Standard verification checks passed successfully."]
-          ).map((reason, idx) => (
+          ).map((reason: string, idx: number) => (
             <li key={idx} className="result-reason">{reason}</li>
           ))}
         </ul>
@@ -664,7 +664,7 @@ export function ResultsPanel({ results, isScanning }: ResultsPanelProps) {
           {(trust_score_data.recommended_actions.length > 0
             ? trust_score_data.recommended_actions
             : ["Verify transaction UTR and receiver credentials directly in your banking app before releasing goods."]
-          ).map((action, idx) => (
+          ).map((action: string, idx: number) => (
             <li key={idx} className="result-action">{action}</li>
           ))}
         </ul>
