@@ -268,6 +268,7 @@ export function ResultsPanel({ results, isScanning }: ResultsPanelProps) {
           <span className="dot" /> Document Forensic Results
         </div>
         
+      <div className="results-panel-content">
         <div className="result-block" style={{ textAlign: "center", padding: "24px 0 8px" }}>
           <div className="result-score-number" style={{ color: doc.risk_level === "LOW" ? "#31f58b" : doc.risk_level === "MEDIUM" ? "#ffb22e" : "#ff4d2e" }}>
             {doc.risk_level}
@@ -362,6 +363,7 @@ export function ResultsPanel({ results, isScanning }: ResultsPanelProps) {
           </p>
         </div>
       </div>
+      </div>
     );
   }
 
@@ -376,6 +378,7 @@ export function ResultsPanel({ results, isScanning }: ResultsPanelProps) {
           <span className="dot" /> QR Code Analysis
         </div>
         
+      <div className="results-panel-content">
         <div className="result-block" style={{ textAlign: "center", padding: "24px 0 8px" }}>
           <div className="result-score-number" style={{
             color: qr.risk_level === "HIGH" ? "#ff4d2e" : qr.risk_level === "MEDIUM" ? "#ffb22e" : "#31f58b"
@@ -444,6 +447,7 @@ export function ResultsPanel({ results, isScanning }: ResultsPanelProps) {
           </ul>
         </div>
       </div>
+      </div>
     );
   }
 
@@ -466,289 +470,289 @@ export function ResultsPanel({ results, isScanning }: ResultsPanelProps) {
         <span className="dot" /> Forensic Results
       </div>
 
-      {/* ── Trust Score Hero ── */}
-      <div className="result-block">
-        <div className="result-score">
-          <div className="result-score-number" style={{ color: scoreColor }}>
-            {Math.round(trust_score_data.trust_score)}
-          </div>
-          <div className="result-score-label">Trust Score / 100</div>
-          <div className="result-verdict" style={{ borderColor: `${scoreColor}55`, background: `${scoreColor}0a` }}>
-            <span>Verdict</span>
-            <strong style={{ color: verdictStyle.color }}>{verdictStyle.icon} {finalVerdict}</strong>
-          </div>
-          {qualityLabel && qualityBadge && (
-            <div style={{
-              marginTop: "8px", display: "inline-block", padding: "4px 12px",
-              borderRadius: "20px", fontSize: "0.72rem", fontWeight: 500, letterSpacing: "0.04em",
-              background: qualityBadge.bg, color: qualityBadge.text, border: `1px solid ${qualityBadge.text}22`,
-            }}>
-              {qualityLabel}
+      <div className="results-panel-content">
+        {/* ── Trust Score Hero ── */}
+        <div className="result-block">
+          <div className="result-score">
+            <div className="result-score-number" style={{ color: scoreColor }}>
+              {Math.round(trust_score_data.trust_score)}
             </div>
-          )}
-        </div>
-      </div>
-
-      {/* ── Score Breakdown ── */}
-      {deterministic_flags?.score_breakdown && (
-        <div className="result-block">
-          <h4 className="result-block-title">Score Breakdown</h4>
-          <ScoreBreakdown
-            breakdown={deterministic_flags.score_breakdown}
-            caps={deterministic_flags.triggered_caps}
-          />
-        </div>
-      )}
-
-      {/* ── Deterministic Flags ── */}
-      {deterministic_flags && (
-        <div className="result-block">
-          <h4 className="result-block-title">Deterministic Flags</h4>
-          <div className="flags-grid">
-            <FlagChip
-              label="Foreign Currency"
-              active={deterministic_flags.foreign_currency_detected}
-              danger
-            />
-            <FlagChip
-              label="UTR Format Issue"
-              active={deterministic_flags.utr_format_violation || deterministic_flags.utr_dummy_pattern}
-              danger
-            />
-            <FlagChip
-              label="EXIF Editing SW"
-              active={deterministic_flags.exif_editing_software}
-              danger
-              detail={deterministic_flags.exif_software_name ?? undefined}
-            />
-            <FlagChip
-              label="Late Night Txn"
-              active={deterministic_flags.timestamp_late_night}
-              warn
-            />
-            <FlagChip
-              label="Replay Attack"
-              active={deterministic_flags.replay_detected}
-              danger
-              detail={deterministic_flags.replay_count > 0 ? `${deterministic_flags.replay_count}×` : undefined}
-            />
+            <div className="result-score-label">Trust Score / 100</div>
+            <div className="result-verdict" style={{ borderColor: `${scoreColor}55`, background: `${scoreColor}0a` }}>
+              <span>Verdict</span>
+              <strong style={{ color: verdictStyle.color }}>{verdictStyle.icon} {finalVerdict}</strong>
+            </div>
+            {qualityLabel && qualityBadge && (
+              <div style={{
+                marginTop: "8px", display: "inline-block", padding: "4px 12px",
+                borderRadius: "20px", fontSize: "0.72rem", fontWeight: 500, letterSpacing: "0.04em",
+                background: qualityBadge.bg, color: qualityBadge.text, border: `1px solid ${qualityBadge.text}22`,
+              }}>
+                {qualityLabel}
+              </div>
+            )}
           </div>
         </div>
-      )}
 
+        {/* ── Score Breakdown ── */}
+        {deterministic_flags?.score_breakdown && (
+          <div className="result-block">
+            <h4 className="result-block-title">Score Breakdown</h4>
+            <ScoreBreakdown
+              breakdown={deterministic_flags.score_breakdown}
+              caps={deterministic_flags.triggered_caps}
+            />
+          </div>
+        )}
 
+        {/* ── Deterministic Flags ── */}
+        {deterministic_flags && (
+          <div className="result-block">
+            <h4 className="result-block-title">Deterministic Flags</h4>
+            <div className="flags-grid">
+              <FlagChip
+                label="Foreign Currency"
+                active={deterministic_flags.foreign_currency_detected}
+                danger
+              />
+              <FlagChip
+                label="UTR Format Issue"
+                active={deterministic_flags.utr_format_violation || deterministic_flags.utr_dummy_pattern}
+                danger
+              />
+              <FlagChip
+                label="EXIF Editing SW"
+                active={deterministic_flags.exif_editing_software}
+                danger
+                detail={deterministic_flags.exif_software_name ?? undefined}
+              />
+              <FlagChip
+                label="Late Night Txn"
+                active={deterministic_flags.timestamp_late_night}
+                warn
+              />
+              <FlagChip
+                label="Replay Attack"
+                active={deterministic_flags.replay_detected}
+                danger
+                detail={deterministic_flags.replay_count > 0 ? `${deterministic_flags.replay_count}×` : undefined}
+              />
+            </div>
+          </div>
+        )}
 
-      {/* ── Deepfake Detection ── */}
-      {deepfake_data && (
-        <div className="result-block">
-          <h4 className="result-block-title">Deepfake Detection</h4>
-          <div style={{ marginBottom: "10px" }}>
-            <div className="score-bar-meta">
-              <span className="score-bar-label">AI Manipulation Probability</span>
-              <span className="score-bar-pts" style={{
-                color: (deepfakePct ?? 0) > 70 ? "var(--ember)" : (deepfakePct ?? 0) > 40 ? "var(--warn)" : "var(--success)"
-              }}>
-                {deepfakePct}%
+        {/* ── Deepfake Detection ── */}
+        {deepfake_data && (
+          <div className="result-block">
+            <h4 className="result-block-title">Deepfake Detection</h4>
+            <div style={{ marginBottom: "10px" }}>
+              <div className="score-bar-meta">
+                <span className="score-bar-label">AI Manipulation Probability</span>
+                <span className="score-bar-pts" style={{
+                  color: (deepfakePct ?? 0) > 70 ? "var(--ember)" : (deepfakePct ?? 0) > 40 ? "var(--warn)" : "var(--success)"
+                }}>
+                  {deepfakePct}%
+                </span>
+              </div>
+              <div className="score-bar-track">
+                <div className="score-bar-fill" style={{
+                  width: `${deepfakePct}%`,
+                  background: (deepfakePct ?? 0) > 70
+                    ? "var(--ember)"
+                    : (deepfakePct ?? 0) > 40
+                    ? "var(--warn)"
+                    : "var(--success)",
+                  boxShadow: (deepfakePct ?? 0) > 70 ? "0 0 8px var(--ember-glow)" : "0 0 8px var(--signal-glow)",
+                }} />
+              </div>
+            </div>
+            <div className="result-row">
+              <span className="label">Verdict</span>
+              <span className={`value ${deepfake_data.is_deepfake ? "danger" : "success"}`}>
+                {deepfake_data.is_deepfake ? "⚠ Manipulation Detected" : "✓ Appears Authentic"}
               </span>
             </div>
-            <div className="score-bar-track">
-              <div className="score-bar-fill" style={{
-                width: `${deepfakePct}%`,
-                background: (deepfakePct ?? 0) > 70
-                  ? "var(--ember)"
-                  : (deepfakePct ?? 0) > 40
-                  ? "var(--warn)"
-                  : "var(--success)",
-                boxShadow: (deepfakePct ?? 0) > 70 ? "0 0 8px var(--ember-glow)" : "0 0 8px var(--signal-glow)",
-              }} />
-            </div>
+            {deepfake_data.manipulation_type && deepfake_data.manipulation_type !== "none" && deepfake_data.manipulation_type !== "unknown" && (
+              <div className="result-row">
+                <span className="label">Type</span>
+                <span className="value warn">{deepfake_data.manipulation_type}</span>
+              </div>
+            )}
+            {deepfake_data.signals?.length > 0 && (
+              <ul className="signal-list">
+                {deepfake_data.signals.slice(0, 4).map((s: string, i: number) => (
+                  <li key={i}>{s}</li>
+                ))}
+              </ul>
+            )}
           </div>
-          <div className="result-row">
-            <span className="label">Verdict</span>
-            <span className={`value ${deepfake_data.is_deepfake ? "danger" : "success"}`}>
-              {deepfake_data.is_deepfake ? "⚠ Manipulation Detected" : "✓ Appears Authentic"}
-            </span>
-          </div>
-          {deepfake_data.manipulation_type && deepfake_data.manipulation_type !== "none" && deepfake_data.manipulation_type !== "unknown" && (
+        )}
+
+        {/* ── App Forensics ── */}
+        {app_forensics && (
+          <div className="result-block">
+            <h4 className="result-block-title">App Forensics</h4>
             <div className="result-row">
-              <span className="label">Type</span>
-              <span className="value warn">{deepfake_data.manipulation_type}</span>
+              <span className="label">Detected App</span>
+              <span className="value">{app_forensics.detected_app}</span>
             </div>
-          )}
-          {deepfake_data.signals?.length > 0 && (
-            <ul className="signal-list">
-              {deepfake_data.signals.slice(0, 4).map((s: string, i: number) => (
-                <li key={i}>{s}</li>
-              ))}
-            </ul>
-          )}
-        </div>
-      )}
+            <div className="result-row">
+              <span className="label">Logo Match</span>
+              <span className={`value ${app_forensics.logo_match ? "success" : "warn"}`}>
+                {app_forensics.logo_match ? "✓ Matched" : "⚠ No Match"}
+              </span>
+            </div>
+            <div className="result-row">
+              <span className="label">Layout Consistency</span>
+              <span className={`value ${app_forensics.layout_consistency === "HIGH" ? "success" : app_forensics.layout_consistency === "MEDIUM" ? "warn" : "danger"}`}>
+                {app_forensics.layout_consistency}
+              </span>
+            </div>
+            <div className="result-row">
+              <span className="label">Clone Suspected</span>
+              <span className={`value ${app_forensics.suspected_clone ? "danger" : "success"}`}>
+                {app_forensics.suspected_clone ? "⚠ Yes" : "✓ No"}
+              </span>
+            </div>
+            {app_forensics.explanation && (
+              <p style={{ fontSize: "0.76rem", color: "var(--foreground-muted)", marginTop: "8px", lineHeight: 1.5, fontStyle: "italic" }}>
+                {app_forensics.explanation}
+              </p>
+            )}
+          </div>
+        )}
 
-      {/* ── App Forensics ── */}
-      {app_forensics && (
-        <div className="result-block">
-          <h4 className="result-block-title">App Forensics</h4>
-          <div className="result-row">
-            <span className="label">Detected App</span>
-            <span className="value">{app_forensics.detected_app}</span>
-          </div>
-          <div className="result-row">
-            <span className="label">Logo Match</span>
-            <span className={`value ${app_forensics.logo_match ? "success" : "warn"}`}>
-              {app_forensics.logo_match ? "✓ Matched" : "⚠ No Match"}
-            </span>
-          </div>
-          <div className="result-row">
-            <span className="label">Layout Consistency</span>
-            <span className={`value ${app_forensics.layout_consistency === "HIGH" ? "success" : app_forensics.layout_consistency === "MEDIUM" ? "warn" : "danger"}`}>
-              {app_forensics.layout_consistency}
-            </span>
-          </div>
-          <div className="result-row">
-            <span className="label">Clone Suspected</span>
-            <span className={`value ${app_forensics.suspected_clone ? "danger" : "success"}`}>
-              {app_forensics.suspected_clone ? "⚠ Yes" : "✓ No"}
-            </span>
-          </div>
-          {app_forensics.explanation && (
-            <p style={{ fontSize: "0.76rem", color: "var(--foreground-muted)", marginTop: "8px", lineHeight: 1.5, fontStyle: "italic" }}>
-              {app_forensics.explanation}
-            </p>
-          )}
-        </div>
-      )}
-
-      {/* ── UPI & Transaction Integrity ── */}
-      {(vpa_validation_data || deterministic_flags) && (
-        <div className="result-block">
-          <h4 className="result-block-title">UPI & Transaction Integrity</h4>
-          
-          {vpa_validation_data && (
-            <>
-              <div className="result-row">
-                <span className="label">VPA (UPI ID) Address</span>
-                <span className="value" style={{ fontFamily: "var(--font-mono)", color: "var(--signal)" }}>
-                  {vpa_validation_data.upi_id || "Not Found"}
-                </span>
-              </div>
-              <div className="result-row">
-                <span className="label">VPA Registry Check</span>
-                <span className={`value ${vpa_validation_data.vpa_exists === true ? "success" : vpa_validation_data.vpa_exists === false ? "danger" : "warn"}`}>
-                  {vpa_validation_data.vpa_exists === true ? "✓ VALID VPA" : vpa_validation_data.vpa_exists === false ? "❌ VPA DOES NOT EXIST" : "⚠ LOOKUP FAILED"}
-                </span>
-              </div>
-              {vpa_validation_data.registered_name && (
+        {/* ── UPI & Transaction Integrity ── */}
+        {(vpa_validation_data || deterministic_flags) && (
+          <div className="result-block">
+            <h4 className="result-block-title">UPI & Transaction Integrity</h4>
+            
+            {vpa_validation_data && (
+              <>
                 <div className="result-row">
-                  <span className="label">VPA Registered Name</span>
-                  <span className="value">{vpa_validation_data.registered_name}</span>
-                </div>
-              )}
-              {vpa_validation_data.name_match !== null && (
-                <div className="result-row">
-                  <span className="label">Receiver Name Correlation</span>
-                  <span className={`value ${vpa_validation_data.name_match ? "success" : "warn"}`}>
-                    {vpa_validation_data.name_match ? "✓ MATCHED" : "⚠ MISMATCHED / SUSPICIOUS"}
+                  <span className="label">VPA (UPI ID) Address</span>
+                  <span className="value" style={{ fontFamily: "var(--font-mono)", color: "var(--signal)" }}>
+                    {vpa_validation_data.upi_id || "Not Found"}
                   </span>
                 </div>
-              )}
-            </>
-          )}
+                <div className="result-row">
+                  <span className="label">VPA Registry Check</span>
+                  <span className={`value ${vpa_validation_data.vpa_exists === true ? "success" : vpa_validation_data.vpa_exists === false ? "danger" : "warn"}`}>
+                    {vpa_validation_data.vpa_exists === true ? "✓ VALID VPA" : vpa_validation_data.vpa_exists === false ? "❌ VPA DOES NOT EXIST" : "⚠ LOOKUP FAILED"}
+                  </span>
+                </div>
+                {vpa_validation_data.registered_name && (
+                  <div className="result-row">
+                    <span className="label">VPA Registered Name</span>
+                    <span className="value">{vpa_validation_data.registered_name}</span>
+                  </div>
+                )}
+                {vpa_validation_data.name_match !== null && (
+                  <div className="result-row">
+                    <span className="label">Receiver Name Correlation</span>
+                    <span className={`value ${vpa_validation_data.name_match ? "success" : "warn"}`}>
+                      {vpa_validation_data.name_match ? "✓ MATCHED" : "⚠ MISMATCHED / SUSPICIOUS"}
+                    </span>
+                  </div>
+                )}
+              </>
+            )}
 
-          {deterministic_flags && (
-            <div className="result-row" style={{ marginTop: "8px", paddingTop: "8px", borderTop: "1px solid rgba(255,255,255,0.05)" }}>
-              <span className="label">Transaction Replay Attack</span>
-              <span className={`value ${deterministic_flags.replay_detected ? "danger font-extrabold animate-pulse" : "success"}`}>
-                {deterministic_flags.replay_detected 
-                  ? `❌ REPLAY DETECTED (${deterministic_flags.replay_count} times seen)` 
-                  : "✓ UNIQUE (First scan)"}
-              </span>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* ── OCR Data ── */}
-      <div className="result-block">
-        <h4 className="result-block-title" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          OCR Data
-          <span style={{
-            fontSize: "0.68rem", fontWeight: 400, padding: "2px 8px", borderRadius: "10px",
-            background: ocrPct >= 70 ? "var(--signal-glow)" : ocrPct >= 40 ? "rgba(255,178,46,0.10)" : "var(--ember-glow)",
-            color: ocrPct >= 70 ? "var(--success)" : ocrPct >= 40 ? "var(--warn)" : "var(--ember)",
-          }}>
-            {ocrPct}% confidence
-          </span>
-        </h4>
-        {([
-          ["Amount",         ocr_data.fields.payment_amount ? (
-            /^[₹$€£]|^(?:Rs\.?|INR)/i.test(ocr_data.fields.payment_amount)
-              ? ocr_data.fields.payment_amount
-              : `₹${ocr_data.fields.payment_amount}`) : "N/A"],
-          ["Transaction ID", ocr_data.fields.upi_transaction_id || "N/A"],
-          ["Receiver",       ocr_data.fields.receiver_name || "N/A"],
-          ["Timestamp",      ocr_data.fields.timestamp || "N/A"],
-          ["Payment App",    ocr_data.fields.payment_app_name || "N/A"],
-          ...(imageQualPct != null ? [["Image Quality", `${imageQualPct}%`]] : []),
-        ] as [string, string][]).map(([label, value]) => (
-          <div className="result-row" key={label}>
-            <span className="label">{label}</span>
-            <span className="value">{value}</span>
+            {deterministic_flags && (
+              <div className="result-row" style={{ marginTop: "8px", paddingTop: "8px", borderTop: "1px solid rgba(255,255,255,0.05)" }}>
+                <span className="label">Transaction Replay Attack</span>
+                <span className={`value ${deterministic_flags.replay_detected ? "danger font-extrabold animate-pulse" : "success"}`}>
+                  {deterministic_flags.replay_detected 
+                    ? `❌ REPLAY DETECTED (${deterministic_flags.replay_count} times seen)` 
+                    : "✓ UNIQUE (First scan)"}
+                </span>
+              </div>
+            )}
           </div>
-        ))}
-      </div>
+        )}
 
-      {/* ── Fraud Intelligence ── */}
-      <div className="result-block">
-        <h4 className="result-block-title">Fraud Intelligence</h4>
-        <div className="result-row">
-          <span className="label">Template Match</span>
-          <span className={`value ${fraud_intelligence_data.fingerprint_match ? "danger" : "success"}`}>
-            {fraud_intelligence_data.fingerprint_match ? "⚠ DETECTED" : "✓ CLEAR"}
-          </span>
-        </div>
-        <div className="result-row">
-          <span className="label">Confidence</span>
-          <span className="value">{Math.round(fraud_intelligence_data.match_confidence * 100)}%</span>
-        </div>
-        <div className="result-row">
-          <span className="label">Fraud Type</span>
-          <span className="value">{fraud_intelligence_data.fraud_type || "None Detected"}</span>
-        </div>
-      </div>
-
-      {/* ── AI Reasoning ── */}
-      <div className="result-block">
-        <h4 className="result-block-title">AI Reasoning</h4>
-        <ul style={{ padding: 0, margin: "8px 0 0 0", listStyle: "none" }}>
-          {(trust_score_data.confidence_reasoning.length > 0
-            ? trust_score_data.confidence_reasoning
-            : ["Standard verification checks passed successfully."]
-          ).map((reason: string, idx: number) => (
-            <li key={idx} className="result-reason">{reason}</li>
+        {/* ── OCR Data ── */}
+        <div className="result-block">
+          <h4 className="result-block-title" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            OCR Data
+            <span style={{
+              fontSize: "0.68rem", fontWeight: 400, padding: "2px 8px", borderRadius: "10px",
+              background: ocrPct >= 70 ? "var(--signal-glow)" : ocrPct >= 40 ? "rgba(255,178,46,0.10)" : "var(--ember-glow)",
+              color: ocrPct >= 70 ? "var(--success)" : ocrPct >= 40 ? "var(--warn)" : "var(--ember)",
+            }}>
+              {ocrPct}% confidence
+            </span>
+          </h4>
+          {([
+            ["Amount",         ocr_data.fields.payment_amount ? (
+              /^[₹$€£]|^(?:Rs\.?|INR)/i.test(ocr_data.fields.payment_amount)
+                ? ocr_data.fields.payment_amount
+                : `₹${ocr_data.fields.payment_amount}`) : "N/A"],
+            ["Transaction ID", ocr_data.fields.upi_transaction_id || "N/A"],
+            ["Receiver",       ocr_data.fields.receiver_name || "N/A"],
+            ["Timestamp",      ocr_data.fields.timestamp || "N/A"],
+            ["Payment App",    ocr_data.fields.payment_app_name || "N/A"],
+            ...(imageQualPct != null ? [["Image Quality", `${imageQualPct}%`]] : []),
+          ] as [string, string][]).map(([label, value]) => (
+            <div className="result-row" key={label}>
+              <span className="label">{label}</span>
+              <span className="value">{value}</span>
+            </div>
           ))}
-        </ul>
-      </div>
+        </div>
 
-      {/* ── Recommended Actions ── */}
-      <div className="result-block">
-        <h4 className="result-block-title">Recommended Actions</h4>
-        <ul style={{ padding: 0, margin: "8px 0 0 0", listStyle: "none" }}>
-          {(trust_score_data.recommended_actions.length > 0
-            ? trust_score_data.recommended_actions
-            : ["Verify transaction UTR and receiver credentials directly in your banking app before releasing goods."]
-          ).map((action: string, idx: number) => (
-            <li key={idx} className="result-action">{action}</li>
-          ))}
-        </ul>
-      </div>
+        {/* ── Fraud Intelligence ── */}
+        <div className="result-block">
+          <h4 className="result-block-title">Fraud Intelligence</h4>
+          <div className="result-row">
+            <span className="label">Template Match</span>
+            <span className={`value ${fraud_intelligence_data.fingerprint_match ? "danger" : "success"}`}>
+              {fraud_intelligence_data.fingerprint_match ? "⚠ DETECTED" : "✓ CLEAR"}
+            </span>
+          </div>
+          <div className="result-row">
+            <span className="label">Confidence</span>
+            <span className="value">{Math.round(fraud_intelligence_data.match_confidence * 100)}%</span>
+          </div>
+          <div className="result-row">
+            <span className="label">Fraud Type</span>
+            <span className="value">{fraud_intelligence_data.fraud_type || "None Detected"}</span>
+          </div>
+        </div>
 
-      {/* ── Scan Metadata ── */}
-      <div className="result-block">
-        <h4 className="result-block-title">Scan Metadata</h4>
-        <div className="result-row">
-          <span className="label">Execution Time</span>
-          <span className="value">{(metadata.execution_time_ms / 1000).toFixed(2)}s</span>
+        {/* ── AI Reasoning ── */}
+        <div className="result-block">
+          <h4 className="result-block-title">AI Reasoning</h4>
+          <ul style={{ padding: 0, margin: "8px 0 0 0", listStyle: "none" }}>
+            {(trust_score_data.confidence_reasoning.length > 0
+              ? trust_score_data.confidence_reasoning
+              : ["Standard verification checks passed successfully."]
+            ).map((reason: string, idx: number) => (
+              <li key={idx} className="result-reason">{reason}</li>
+            ))}
+          </ul>
+        </div>
+
+        {/* ── Recommended Actions ── */}
+        <div className="result-block">
+          <h4 className="result-block-title">Recommended Actions</h4>
+          <ul style={{ padding: 0, margin: "8px 0 0 0", listStyle: "none" }}>
+            {(trust_score_data.recommended_actions.length > 0
+              ? trust_score_data.recommended_actions
+              : ["Verify transaction UTR and receiver credentials directly in your banking app before releasing goods."]
+            ).map((action: string, idx: number) => (
+              <li key={idx} className="result-action">{action}</li>
+            ))}
+          </ul>
+        </div>
+
+        {/* ── Scan Metadata ── */}
+        <div className="result-block">
+          <h4 className="result-block-title">Scan Metadata</h4>
+          <div className="result-row">
+            <span className="label">Execution Time</span>
+            <span className="value">{(metadata.execution_time_ms / 1000).toFixed(2)}s</span>
+          </div>
         </div>
       </div>
     </div>

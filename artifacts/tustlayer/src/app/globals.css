@@ -1070,21 +1070,36 @@ body {
     var(--bg);
 }
 
+.product-page {
+  height: calc(100vh - 130px);
+  max-height: calc(100vh - 130px);
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
 .product-layout {
   display: grid;
   grid-template-columns: 330px 1fr 400px;
   gap: 24px;
   max-width: 1440px;
   margin: 0 auto;
-  padding: 24px clamp(16px, 3vw, 32px);
-  min-height: calc(100svh - 80px);
+  padding: 16px clamp(16px, 3vw, 32px);
+  height: 100%;
   align-items: stretch;
+  box-sizing: border-box;
 }
 
 @media (max-width: 1200px) {
   .product-layout {
     grid-template-columns: 1fr;
     gap: 20px;
+    height: auto;
+    max-height: none;
+  }
+  .product-page {
+    height: auto;
+    max-height: none;
+    overflow: auto;
   }
 }
 
@@ -1263,7 +1278,34 @@ body {
 
 /* Results panel (right) */
 .results-panel {
+  display: flex;
+  flex-direction: column;
   height: 100%;
+  overflow: hidden;
+}
+
+.results-panel-content {
+  overflow-y: auto;
+  flex-grow: 1;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+}
+
+.results-panel-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.results-panel-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.results-panel-content::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+}
+
+.results-panel-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.22);
 }
 
 .result-block {
