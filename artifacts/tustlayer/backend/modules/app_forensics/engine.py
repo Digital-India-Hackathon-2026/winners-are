@@ -130,6 +130,35 @@ class AppForensicsEngine:
             print(f"[APP-FORENSICS] Alignment check skipped: {e}")
             return "NORMAL"
 
+    def _detect_gpay_blue_circle(self, img: Image.Image) -> bool:
+        """
+        Scans the upper-center area of the image for Google Pay's signature blue success checkmark circle.
+        """
+        try:
+            base_h = 800
+            w, h = img.size
+            scale = base_h / h
+            img_resized = img.resize((int(w * scale), base_h)).convert("RGB")
+            
+            rw, rh = img_resized.size
+            start_x = int(rw * 0.35)
+            end_x = int(rw * 0.65)
+            start_y = int(rh * 0.10)
+            end_y = int(rh * 0.45)
+            
+            gpay_blue_pixels = 0
+            for y in range(start_y, end_y):
+                for x in range(start_x, end_x):
+                    r, g, b = img_resized.getpixel((x, y))
+                    if b > 180 and r < 80 and g < 150 and b - r > 120 and b - g > 60:
+                        gpay_blue_pixels += 1
+                        
+            print(f"[APP-FORENSICS] GPay blue checkmark scan: found {gpay_blue_pixels} blue pixels.")
+            return gpay_blue_pixels > 150
+        except Exception as e:
+            print(f"[APP-FORENSICS] GPay blue circle scan failed: {e}")
+            return False
+
     def analyze(self, image_bytes: bytes, raw_text: str, claimed_app: str = None) -> AppForensicsResult:
         try:
             # 1. Parse Image and crop solid border padding
@@ -274,8 +303,19 @@ class AppForensicsEngine:
             is_mobile_ratio = 1.3 < aspect_ratio < 2.5
             
             # Match rules
-            # Match rules
-            if claimed_app == "PhonePe":
+            is_gpay_visually = self._detect_gpay_blue_circle(img)
+            
+            if is_gpay_visually:
+                detected_app = "Google Pay"
+                if claimed_app == "Google Pay":
+                    logo_match = True
+                    explanation = "Authentic Google Pay layout structure and blue confirmation circle verified."
+                else:
+                    logo_match = False
+                    layout_consistency = "LOW"
+                    authenticity_score = 0.35
+                    explanation = f"Mismatched Branding: Visual elements match Google Pay (blue success circle found), but text claimed {claimed_app}."
+            elif claimed_app == "PhonePe":
                 if purple_pct > 0.03 or purple_pct_header > 0.15:
                     detected_app = "PhonePe"
                     logo_match = True
