@@ -76,7 +76,7 @@ class RecommendationEngine:
         
         # Hardcoded actionable advice per user request
         base_actions = []
-        if risk in [RiskLevel.HIGH, RiskLevel.CRITICAL]:
+        if risk == RiskLevel.HIGH:
             base_actions = [
                 "🚨 DO NOT release goods or services. This receipt appears manipulated.",
                 "🚔 Report to Cybercrime: File a complaint on cybercrime.gov.in with the sender's details.",

@@ -18,7 +18,12 @@ class FinalDecisionAssembler:
     def __init__(self):
         self.engine = TrustScoreEngine()
         self.escalation = RiskEscalationLayer()
-        self.qwen = LlamaReasoningProvider()
+        from backend.core.config import settings
+        if settings.GROQ_API_KEY:
+            from backend.integrations.groq_client import GroqReasoningProvider
+            self.qwen = GroqReasoningProvider()
+        else:
+            self.qwen = LlamaReasoningProvider()
         self.ai_orchestrator = AIReasoningOrchestrator(
             primary=self.qwen,
             fallback=PhiReasoningProvider()

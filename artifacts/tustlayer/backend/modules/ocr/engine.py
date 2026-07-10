@@ -86,10 +86,15 @@ class NvidiaFirstOCREngine:
         quality_score = _compute_image_quality(image_bytes)
         print(f"[OCR-ENGINE] Image quality: {quality_score:.2f}")
 
-        # ── STEP 1: NVIDIA Nemotron-VL (PRIMARY) ─────────────────────────
+        # ── STEP 1: Vision OCR Extraction ─────────────────────────
         raw_text_extracted = None
         try:
-            extractor = NvidiaOCRExtractor()
+            from backend.core.config import settings
+            if settings.GROQ_API_KEY:
+                from backend.integrations.groq_client import GroqVisionProvider
+                extractor = GroqVisionProvider()
+            else:
+                extractor = NvidiaOCRExtractor()
             raw_fields = await extractor.extract_fields(image_bytes)
             fields = _map_nvidia_response_to_fields(raw_fields)
             confidence = calculate_weighted_confidence(fields)

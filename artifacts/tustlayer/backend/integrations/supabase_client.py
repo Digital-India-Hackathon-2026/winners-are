@@ -6,7 +6,7 @@ from backend.core.config import settings
 
 def get_supabase_client() -> Client:
     url: str = settings.SUPABASE_URL
-    key: str = settings.SUPABASE_KEY
+    key: str = os.getenv("SUPABASE_ANON_KEY") or os.getenv("NEXT_PUBLIC_SUPABASE_ANON_KEY") or settings.SUPABASE_KEY
     if not url or not key or url == "your_supabase_url_here":
         print("[TRUSTLAYER-DEBUG] Warning: Supabase credentials not set.")
         # Return a mock client for hackathon local dev if needed

@@ -11,25 +11,30 @@ class Settings(BaseSettings):
     FIREBASE_CREDENTIALS_PATH: str = os.getenv("FIREBASE_CREDENTIALS_PATH", "")
 
     # AI Providers
-    NVIDIA_API_KEY: str = os.getenv("NVIDIA_API_KEY", "")
-    NVIDIA_BASE_URL: str = os.getenv("NVIDIA_BASE_URL", "https://integrate.api.nvidia.com/v1")
+    NVIDIA_API_KEY: str = os.getenv("NVIDIA_API_KEY") or ""
+    NVIDIA_BASE_URL: str = os.getenv("NVIDIA_BASE_URL") or "https://integrate.api.nvidia.com/v1"
 
     # v2.0 Model IDs
-    OCR_MODEL: str = os.getenv("OCR_MODEL", "nvidia/nemotron-ocr-v2")
-    VISUAL_AI_MODEL: str = os.getenv("VISUAL_AI_MODEL", "nvidia/nemotron-nano-12b-v2-vl")
-    REASONING_MODEL: str = os.getenv("REASONING_MODEL", "meta/llama-3.3-70b-instruct")
-    FALLBACK_MODEL: str = os.getenv("FALLBACK_MODEL", "meta/llama-3.1-8b-instruct")
-    DEEPFAKE_MODEL: str = os.getenv("DEEPFAKE_MODEL", "hive/deepfake-image-detection")
-    CONTENT_SAFETY_MODEL: str = os.getenv("CONTENT_SAFETY_MODEL", "nvidia/nemotron-content-safety-reasoning-4b")
-    LLAMA_GUARD_MODEL: str = os.getenv("LLAMA_GUARD_MODEL", "meta/llama-guard-4-12b")
+    OCR_MODEL: str = os.getenv("OCR_MODEL") or "nvidia/nemotron-ocr-v2"
+    VISUAL_AI_MODEL: str = os.getenv("VISUAL_AI_MODEL") or "nvidia/nemotron-nano-12b-v2-vl"
+    REASONING_MODEL: str = os.getenv("REASONING_MODEL") or "meta/llama-3.3-70b-instruct"
+    FALLBACK_MODEL: str = os.getenv("FALLBACK_MODEL") or "meta/llama-3.1-8b-instruct"
+    DEEPFAKE_MODEL: str = os.getenv("DEEPFAKE_MODEL") or "hive/deepfake-image-detection"
+    CONTENT_SAFETY_MODEL: str = os.getenv("CONTENT_SAFETY_MODEL") or "nvidia/nemotron-content-safety-reasoning-4b"
+    LLAMA_GUARD_MODEL: str = os.getenv("LLAMA_GUARD_MODEL") or "meta/llama-guard-4-12b"
 
     # External API keys (new in v2.0)
-    RAZORPAY_KEY_ID: str = os.getenv("RAZORPAY_KEY_ID", "")
-    RAZORPAY_KEY_SECRET: str = os.getenv("RAZORPAY_KEY_SECRET", "")
-    GOOGLE_SAFE_BROWSING_KEY: str = os.getenv("GOOGLE_SAFE_BROWSING_KEY", "")
-    VIRUSTOTAL_API_KEY: str = os.getenv("VIRUSTOTAL_API_KEY", "")
+    RAZORPAY_KEY_ID: str = os.getenv("RAZORPAY_KEY_ID") or ""
+    RAZORPAY_KEY_SECRET: str = os.getenv("RAZORPAY_KEY_SECRET") or ""
+    GOOGLE_SAFE_BROWSING_KEY: str = os.getenv("GOOGLE_SAFE_BROWSING_KEY") or ""
+    VIRUSTOTAL_API_KEY: str = os.getenv("VIRUSTOTAL_API_KEY") or ""
 
-    GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "")
+    GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY") or ""
+
+    # Groq API keys and models
+    GROQ_API_KEY: str = os.getenv("GROQ_API_KEY") or ""
+    GROQ_MODEL: str = os.getenv("GROQ_MODEL") or "llama-3.3-70b-versatile"
+    GROQ_VISION_MODEL: str = os.getenv("GROQ_VISION_MODEL") or "llama-3.2-11b-vision-preview"
 
     model_config = {
         "env_file": ".env",
