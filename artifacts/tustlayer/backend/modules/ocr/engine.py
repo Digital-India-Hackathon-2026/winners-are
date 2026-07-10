@@ -80,7 +80,10 @@ class NvidiaFirstOCREngine:
         raw_text_extracted = None
         try:
             from backend.core.config import settings
-            if settings.GROQ_API_KEY:
+            if settings.GEMINI_API_KEY or settings.GEMINI_API_KEYS:
+                from backend.integrations.gemini_client import GeminiVisionProvider
+                extractor = GeminiVisionProvider()
+            elif settings.GROQ_API_KEY:
                 from backend.integrations.groq_client import GroqVisionProvider
                 extractor = GroqVisionProvider()
             else:

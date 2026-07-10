@@ -84,10 +84,14 @@ class AppForensicsService:
         return deterministic_result
 
     async def _run_ai_branding(self, image_bytes: bytes) -> dict:
-        """Run AI branding validation via Groq (preferred) or Nemotron VL."""
+        """Run AI branding validation via Gemini (preferred), Groq or Nemotron VL."""
         try:
             from backend.core.config import settings
-            if settings.GROQ_API_KEY:
+            if settings.GEMINI_API_KEY or settings.GEMINI_API_KEYS:
+                from backend.integrations.gemini_client import GeminiVisionProvider
+                provider = GeminiVisionProvider()
+                return await provider.verify_branding(image_bytes)
+            elif settings.GROQ_API_KEY:
                 from backend.integrations.groq_client import GroqVisionProvider
                 provider = GroqVisionProvider()
                 return await provider.verify_branding(image_bytes)
