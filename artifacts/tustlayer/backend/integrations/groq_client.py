@@ -28,7 +28,7 @@ class GroqVisionProvider(VisionProvider):
                     {"type": "image_url", "image_url": {"url": f"data:{mime};base64,{b64}"}}
                 ]}
             ],
-            "max_tokens": 512,
+            "max_tokens": 1024,
             "temperature": 0.1,
             "response_format": {"type": "json_object"}
         }

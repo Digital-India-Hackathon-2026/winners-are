@@ -116,7 +116,12 @@ def _validate_utr(utr: Optional[str], raw_text: Optional[str] = None) -> tuple[b
 
 def _detect_foreign_currency(raw_text: Optional[str], amount: Optional[str]) -> bool:
     combined = ((raw_text or "") + " " + (amount or "")).lower()
-    return any(sig in combined for sig in FOREIGN_CURRENCY_SIGNALS)
+    if any(sym in combined for sym in ["$", "€", "£"]):
+        return True
+    import re
+    if re.search(r'\b(dollar|eur|usd|pound|euro)s?\b', combined):
+        return True
+    return False
 
 
 def _validate_amount(amount: Optional[str]) -> bool:
