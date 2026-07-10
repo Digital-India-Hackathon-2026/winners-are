@@ -141,16 +141,16 @@ class AppForensicsEngine:
             img_resized = img.resize((int(w * scale), base_h)).convert("RGB")
             
             rw, rh = img_resized.size
-            start_x = int(rw * 0.35)
-            end_x = int(rw * 0.65)
-            start_y = int(rh * 0.10)
-            end_y = int(rh * 0.45)
+            start_x = int(rw * 0.20)
+            end_x = int(rw * 0.80)
+            start_y = int(rh * 0.02)
+            end_y = int(rh * 0.50)
             
             gpay_blue_pixels = 0
             for y in range(start_y, end_y):
                 for x in range(start_x, end_x):
                     r, g, b = img_resized.getpixel((x, y))
-                    if b > 180 and r < 80 and g < 150 and b - r > 120 and b - g > 60:
+                    if b > 110 and b > r and b > g and (b - r > 40) and (b - g > 25):
                         gpay_blue_pixels += 1
                         
             print(f"[APP-FORENSICS] GPay blue checkmark scan: found {gpay_blue_pixels} blue pixels.")
