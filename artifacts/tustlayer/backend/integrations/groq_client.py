@@ -75,7 +75,9 @@ class GroqVisionProvider(VisionProvider):
         system_prompt = (
             "You are a payment app branding authentication expert.\n"
             "Analyze if the UI branding (logo, colors, layout) matches an authentic known payment app.\n"
-            "CRITICAL: Identify the app based strictly on visual design system layout and colors, NOT by text contents or recipient VPA details. "
+            "CRITICAL RULES:\n"
+            "1. You MUST distinguish between the 'Sender App' (the app the customer is using to make the payment) and the 'Receiver details' text.\n"
+            "2. Identify the app based strictly on visual design system layout, color palettes, and icons, NOT by text strings or recipient VPA details. "
             "For example, a Google Pay screenshot transferring to a PhonePe VPA is still a Google Pay screenshot (NOT PhonePe). "
             "Google Pay uses a blue success circle at the top-center. PhonePe has purple accents. Paytm uses cyan/teal banners. "
             "super.money has a Flipkart-group blue/purple layout with a green success checkbox.\n"

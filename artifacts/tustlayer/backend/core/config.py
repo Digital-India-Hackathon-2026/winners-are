@@ -15,7 +15,7 @@ class Settings(BaseSettings):
     NVIDIA_BASE_URL: str = os.getenv("NVIDIA_BASE_URL") or "https://integrate.api.nvidia.com/v1"
 
     # v2.0 Model IDs
-    OCR_MODEL: str = os.getenv("OCR_MODEL") or "nvidia/nemotron-ocr-v2"
+    OCR_MODEL: str = os.getenv("OCR_MODEL") or "nvidia/cosmos3-nano-reasoner"
     VISUAL_AI_MODEL: str = os.getenv("VISUAL_AI_MODEL") or "nvidia/nemotron-nano-12b-v2-vl"
     REASONING_MODEL: str = os.getenv("REASONING_MODEL") or "meta/llama-3.3-70b-instruct"
     FALLBACK_MODEL: str = os.getenv("FALLBACK_MODEL") or "meta/llama-3.1-8b-instruct"
