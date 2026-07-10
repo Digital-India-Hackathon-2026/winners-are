@@ -196,8 +196,12 @@ class NemotronNano12BVLProvider:
         ),
         "branding_auth": (
             "system",
-            "You are a payment app branding authentication expert. "
-            "Analyze if the UI branding (logo, colors, layout) matches an authentic known payment app. "
+            "You are a payment app branding authentication expert.\n"
+            "Analyze if the UI branding (logo, colors, layout) matches an authentic known payment app.\n"
+            "CRITICAL: Identify the app based strictly on visual design system layout and colors, NOT by text contents or recipient VPA details. "
+            "For example, a Google Pay screenshot transferring to a PhonePe VPA is still a Google Pay screenshot (NOT PhonePe). "
+            "Google Pay uses a blue success circle at the top-center. PhonePe has purple accents. Paytm uses cyan/teal banners. "
+            "super.money has a Flipkart-group blue/purple layout with a green success checkbox.\n"
             "Return ONLY JSON: {\"app_name\": \"string\", \"branding_match\": bool, \"confidence\": 0.0-1.0, \"explanation\": \"string\"}"
         ),
     }

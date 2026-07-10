@@ -46,27 +46,40 @@ class AppForensicsService:
             ai_explanation = ai_branding.get("explanation", "")
 
             blended_score = deterministic_result.app_authenticity_score * 0.65 + ai_confidence * 0.35
-
-            if not ai_match and ai_confidence >= 0.80:
-                blended_score = min(blended_score, 0.70)
-                deterministic_result.suspected_clone = True
+            
+            # Determine final app detection and brand matching dynamically
+            if ai_app and ai_app != "Unknown":
+                deterministic_result.detected_app = ai_app
+                
+                # Check for branding mismatch with claimed OCR app name
+                claimed = deterministic_result.claimed_app
+                if claimed and claimed != "Unknown" and ai_app.lower() != claimed.lower():
+                    deterministic_result.logo_match = False
+                    deterministic_result.layout_consistency = "LOW"
+                    blended_score = min(blended_score, 0.35)
+                    ai_explanation = f"Mismatched Branding: Visual layout is {ai_app}, but text claims {claimed}. {ai_explanation}"
+                else:
+                    deterministic_result.logo_match = ai_match
+                    if not ai_match:
+                        deterministic_result.layout_consistency = "LOW"
+                    else:
+                        deterministic_result.layout_consistency = "HIGH"
+            else:
+                deterministic_result.detected_app = "Unknown"
+                deterministic_result.logo_match = False
                 deterministic_result.layout_consistency = "LOW"
-            elif ai_match:
-                deterministic_result.layout_consistency = "HIGH"
 
+            if deterministic_result.logo_match is False:
+                deterministic_result.suspected_clone = True
+                
             deterministic_result.app_authenticity_score = round(blended_score, 3)
 
-            if ai_app and ai_app != "Unknown" and deterministic_result.detected_app == "Unknown":
-                deterministic_result.detected_app = ai_app
-
             if ai_explanation:
-                deterministic_result.forensic_explanation = (
-                    f"{deterministic_result.forensic_explanation} [AI: {ai_explanation}]"
-                )
+                deterministic_result.forensic_explanation = ai_explanation
 
-            print(f"[APP-FORENSICS] Dual-validated — deterministic+AI blended score: {deterministic_result.app_authenticity_score:.2f}")
+            print(f"[APP-FORENSICS] Dynamic validation complete — Detected: {deterministic_result.detected_app}, Claimed: {deterministic_result.claimed_app}, Match: {deterministic_result.logo_match}")
         except Exception as e:
-            print(f"[APP-FORENSICS] AI blend failed (using deterministic only): {e}")
+            print(f"[APP-FORENSICS] Dynamic validation failed: {e}")
 
         return deterministic_result
 
