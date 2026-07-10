@@ -25,7 +25,9 @@ try:
         async def __call__(self, scope, receive, send):
             if scope["type"] == "http":
                 headers = dict(scope.get("headers", []))
-                matched_path = headers.get(b"x-matched-path", b"").decode("utf-8")
+                matched_path = headers.get(b"x-vercel-forwarded-path", b"").decode("utf-8")
+                if not matched_path:
+                    matched_path = headers.get(b"x-matched-path", b"").decode("utf-8")
                 if matched_path:
                     scope["path"] = matched_path.split("?")[0]
             await self.app(scope, receive, send)
