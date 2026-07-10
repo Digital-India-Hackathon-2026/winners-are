@@ -62,6 +62,7 @@ export default function ProductPage() {
           method: "POST",
           headers: {
             "Authorization": `Bearer ${supabaseKey}`,
+            "apikey": supabaseKey,
             "Content-Type": selectedFile.type,
             "x-upsert": "true"
           },
@@ -69,7 +70,15 @@ export default function ProductPage() {
         });
         
         if (!uploadResponse.ok) {
-          throw new Error("Direct storage upload failed. Verify your Supabase Storage scans bucket.");
+          const errText = await uploadResponse.text();
+          let parsedError = "";
+          try {
+            const errJson = JSON.parse(errText);
+            parsedError = errJson.message || errJson.error || errText;
+          } catch {
+            parsedError = errText;
+          }
+          throw new Error(`Upload failed: ${parsedError}`);
         }
         
         const publicUrl = `${supabaseUrl}/storage/v1/object/public/scans/${uniquePath}`;
