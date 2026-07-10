@@ -61,11 +61,11 @@ def _encode_image(image_bytes: bytes) -> tuple[str, str]:
             img.thumbnail((max_size, max_size), Image.Resampling.LANCZOS)
         
         buf = io.BytesIO()
-        img.save(buf, format="JPEG", quality=80)
+        img.save(buf, format="WEBP", quality=80)
         compressed_bytes = buf.getvalue()
         
         b64 = base64.b64encode(compressed_bytes).decode("utf-8")
-        return b64, "image/jpeg"
+        return b64, "image/webp"
     except Exception as e:
         print(f"[IMAGE-ENCODE] PIL compression failed, falling back to raw: {e}")
         mime = "image/png" if image_bytes[:4] == b"\x89PNG" else "image/jpeg"

@@ -34,7 +34,7 @@ class Settings(BaseSettings):
     # Groq API keys and models
     GROQ_API_KEY: str = os.getenv("GROQ_API_KEY") or ""
     GROQ_MODEL: str = os.getenv("GROQ_MODEL") or "llama-3.3-70b-versatile"
-    GROQ_VISION_MODEL: str = os.getenv("GROQ_VISION_MODEL") or "llama-3.2-11b-vision-preview"
+    GROQ_VISION_MODEL: str = os.getenv("GROQ_VISION_MODEL") or "meta-llama/llama-4-scout-17b-16e-instruct"
 
     model_config = {
         "env_file": ".env",
