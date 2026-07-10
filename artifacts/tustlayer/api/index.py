@@ -25,6 +25,8 @@ try:
         async def __call__(self, scope, receive, send):
             if scope["type"] == "http":
                 headers = dict(scope.get("headers", []))
+                # Print headers to Vercel logs for diagnostic inspection
+                print(f"[TRUSTLAYER-DIAGNOSTIC] ASGI Path: {scope.get('path')}, Headers: { {k.decode('utf-8', errors='ignore'): v.decode('utf-8', errors='ignore') for k, v in headers.items()} }")
                 matched_path = headers.get(b"x-vercel-forwarded-path", b"").decode("utf-8")
                 if not matched_path:
                     matched_path = headers.get(b"x-matched-path", b"").decode("utf-8")
