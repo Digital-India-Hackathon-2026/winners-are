@@ -2,10 +2,9 @@
 
 > **The Trust Verification Layer for Digital Payments**
 >
-> TrustLayer AI is India's first hybrid forensic engine designed to analyze every digital artifact involved in a payment transaction — UPI screenshots, QR codes, documents, and links. Built with a deterministic-first, AI-second architecture, it returns a mathematically verifiable Trust Score and actionable guidance in under 3 seconds.
+> TrustLayer AI is a hybrid transaction forensic engine designed to verify payment integrity across digital channels. By analyzing payment screenshots, QR codes, transaction document details, and links with a deterministic-first, AI-second architecture, TrustLayer returns a mathematically verifiable Trust Score and actionable fraud insights in under 3 seconds.
 
-**Team Hackfinity | WinnovX 2026**
-*Built on real data. Deployed at [trust-layer-tool.vercel.app](https://trust-layer-tool.vercel.app)*
+*Enterprise-Ready Security. Live verification platform deployed at [trust-layer-tool.vercel.app](https://trust-layer-tool.vercel.app)*
 
 📖 **[Read the Full Product Documentation & Case Study](./PRODUCT.md)**
 
