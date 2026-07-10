@@ -298,22 +298,42 @@ export function ResultsPanel({ results, isScanning }: ResultsPanelProps) {
 
         <div className="result-block">
           <h4 className="result-block-title">Document Heuristics</h4>
-          <div className="result-row">
-            <span className="label">Steganography Check</span>
-            <span className={`value ${doc.steganography_suspected ? "danger" : "success"}`}>
-              {doc.steganography_suspected ? "⚠ SUSPICIOUS" : "✓ PASS"}
-            </span>
-          </div>
-          <div className="result-row">
-            <span className="label">Embedded JS / Triggers</span>
-            <span className={`value ${doc.pdf_javascript_found || doc.pdf_auto_action_found ? "danger" : "success"}`}>
-              {doc.pdf_javascript_found || doc.pdf_auto_action_found ? "⚠ DETECTED" : "✓ PASS"}
-            </span>
-          </div>
-          <div className="result-row">
-            <span className="label">Embedded Files count</span>
-            <span className="value">{doc.embedded_file_count}</span>
-          </div>
+          {doc.heuristics_checklist && doc.heuristics_checklist.length > 0 ? (
+            doc.heuristics_checklist.map((item: any, idx: number) => (
+              <div key={idx} className="result-row" style={{ display: "block", marginBottom: "12px", borderBottom: idx !== doc.heuristics_checklist.length - 1 ? "1px solid rgba(255,255,255,0.05)" : "none", paddingBottom: "10px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <span className="label" style={{ fontWeight: 600 }}>{item.label}</span>
+                  <span className={`value ${item.risk === "HIGH" ? "danger" : item.risk === "MEDIUM" ? "warn" : "success"}`}>
+                    {item.status}
+                  </span>
+                </div>
+                {item.reasoning && (
+                  <p style={{ fontSize: "0.8rem", color: "var(--text-muted)", margin: "4px 0 0 0", lineHeight: 1.4 }}>
+                    {item.reasoning}
+                  </p>
+                )}
+              </div>
+            ))
+          ) : (
+            <>
+              <div className="result-row">
+                <span className="label">Steganography Check</span>
+                <span className={`value ${doc.steganography_suspected ? "danger" : "success"}`}>
+                  {doc.steganography_suspected ? "⚠ SUSPICIOUS" : "✓ PASS"}
+                </span>
+              </div>
+              <div className="result-row">
+                <span className="label">Embedded JS / Triggers</span>
+                <span className={`value ${doc.pdf_javascript_found || doc.pdf_auto_action_found ? "danger" : "success"}`}>
+                  {doc.pdf_javascript_found || doc.pdf_auto_action_found ? "⚠ DETECTED" : "✓ PASS"}
+                </span>
+              </div>
+              <div className="result-row">
+                <span className="label">Embedded Files count</span>
+                <span className="value">{doc.embedded_file_count}</span>
+              </div>
+            </>
+          )}
         </div>
 
         {doc.urls_found.length > 0 && (

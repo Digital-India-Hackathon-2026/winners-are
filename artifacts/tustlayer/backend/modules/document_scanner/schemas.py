@@ -25,6 +25,13 @@ class DocumentThreatResult(BaseModel):
     pdf_javascript_found: bool = False
     pdf_auto_action_found: bool = False
 
+    # NSFW & Safety
+    nsfw_content_detected: bool = False
+    nsfw_flagged_category: Optional[str] = None
+
+    # Dynamic heuristics checklist
+    heuristics_checklist: List[dict] = Field(default_factory=list, description="Dynamic array of generated heuristic checks")
+
     # Overall
     risk_level: str = Field("UNKNOWN", description="LOW / MEDIUM / HIGH / UNKNOWN")
     risk_signals: List[str] = Field(default_factory=list)
