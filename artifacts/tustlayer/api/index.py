@@ -17,24 +17,7 @@ try:
         sys.path.append(project_root)
         
     from backend.main import app as real_app
-    
-    class VercelPathMiddleware:
-        def __init__(self, app):
-            self.app = app
-
-        async def __call__(self, scope, receive, send):
-            if scope["type"] == "http":
-                headers = dict(scope.get("headers", []))
-                # Print headers to Vercel logs for diagnostic inspection
-                print(f"[TRUSTLAYER-DIAGNOSTIC] ASGI Path: {scope.get('path')}, Headers: { {k.decode('utf-8', errors='ignore'): v.decode('utf-8', errors='ignore') for k, v in headers.items()} }")
-                matched_path = headers.get(b"x-vercel-forwarded-path", b"").decode("utf-8")
-                if not matched_path:
-                    matched_path = headers.get(b"x-matched-path", b"").decode("utf-8")
-                if matched_path:
-                    scope["path"] = matched_path.split("?")[0]
-            await self.app(scope, receive, send)
-
-    app = VercelPathMiddleware(real_app)
+    app = real_app
 except Exception as e:
     error_traceback = traceback.format_exc()
     print(f"Error on startup: {error_traceback}")
