@@ -46,6 +46,7 @@
   --danger-light: #ffb59d;
   --text-inverse: #0a0b06;
   --shadow-rgb: 0, 0, 0;
+  --tab-bg: rgba(255, 255, 255, 0.02);
 }
 
 [data-theme="light"] {
@@ -80,7 +81,8 @@
   --warn: #f59e0b;
   --danger-light: #ef4444;
   --text-inverse: #ffffff;
-  --shadow-rgb: 16, 185, 129;
+  --shadow-rgb: 15, 23, 42;
+  --tab-bg: rgba(15, 23, 42, 0.04);
 }
 
 @theme inline {
@@ -1063,25 +1065,25 @@ body {
   min-height: 100svh;
   padding-top: 80px;
   background:
-    radial-gradient(circle at 15% 25%, rgba(52, 230, 255, 0.04), transparent 40vw),
-    radial-gradient(circle at 85% 75%, rgba(219, 255, 74, 0.03), transparent 35vw),
+    radial-gradient(circle at 15% 25%, rgba(52, 230, 255, 0.03), transparent 40vw),
+    radial-gradient(circle at 85% 75%, rgba(219, 255, 74, 0.02), transparent 35vw),
     var(--bg);
 }
 
 .product-layout {
   display: grid;
-  grid-template-columns: 320px 1fr 380px;
-  gap: 20px;
+  grid-template-columns: 330px 1fr 400px;
+  gap: 24px;
   max-width: 1440px;
   margin: 0 auto;
   padding: 24px clamp(16px, 3vw, 32px);
   min-height: calc(100svh - 80px);
 }
 
-@media (max-width: 1100px) {
+@media (max-width: 1200px) {
   .product-layout {
     grid-template-columns: 1fr;
-    gap: 16px;
+    gap: 20px;
   }
 }
 
@@ -1089,15 +1091,17 @@ body {
 .product-panel {
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  background: var(--bg-card);
-  backdrop-filter: blur(14px);
+  background: linear-gradient(135deg, var(--bg-card) 0%, rgba(255, 255, 255, 0.01) 100%);
+  backdrop-filter: blur(24px);
   overflow: hidden;
-  transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
+  box-shadow: 0 10px 30px -10px rgba(var(--shadow-rgb), 0.15);
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .product-panel:hover {
-  border-color: rgba(255, 248, 238, 0.16);
-  box-shadow: 0 16px 48px rgba(var(--shadow-rgb), 0.4), inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+  border-color: var(--border-active);
+  transform: translateY(-3px);
+  box-shadow: 0 20px 40px -15px rgba(var(--shadow-rgb), 0.25);
 }
 
 .product-panel-header {
@@ -1589,40 +1593,43 @@ body {
 
 .tool-switcher {
   display: flex;
+  justify-content: center;
   align-items: center;
-  gap: 4px;
-  max-width: 1440px;
-  margin: 0 auto;
-  padding: 12px clamp(16px, 3vw, 32px) 0;
+  gap: 8px;
+  max-width: 600px;
+  margin: 32px auto 16px;
+  padding: 6px;
+  background: var(--tab-bg);
+  border: 1px solid var(--border);
+  border-radius: 9999px;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 4px 20px -10px rgba(var(--shadow-rgb), 0.2);
 }
 
 .tool-tab {
   display: inline-flex;
   align-items: center;
-  padding: 8px 18px;
-  border-radius: var(--radius-md) var(--radius-md) 0 0;
-  border: 1px solid var(--border);
-  border-bottom: none;
-  background: rgba(255, 248, 238, 0.02);
+  padding: 10px 22px;
+  border-radius: 9999px;
+  border: none;
+  background: transparent;
   color: var(--foreground-dim);
   font-size: 0.72rem;
-  font-weight: 800;
-  letter-spacing: 0.09em;
+  font-weight: 700;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
   text-decoration: none;
-  transition: color 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .tool-tab:hover {
-  color: var(--foreground-muted);
-  background: rgba(255, 248, 238, 0.05);
-  border-color: rgba(255, 248, 238, 0.18);
+  color: var(--foreground);
 }
 
 .tool-tab--active {
-  color: var(--signal);
-  background: rgba(219, 255, 74, 0.06);
-  border-color: rgba(219, 255, 74, 0.3);
+  color: var(--text-inverse);
+  background: var(--signal);
+  box-shadow: 0 4px 12px var(--signal-glow);
 }
 
 /* ═══════════════════════════════════════════════════
