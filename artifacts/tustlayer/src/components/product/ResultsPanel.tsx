@@ -619,6 +619,55 @@ export function ResultsPanel({ results, isScanning }: ResultsPanelProps) {
         </div>
       )}
 
+      {/* ── UPI & Transaction Integrity ── */}
+      {(vpa_validation_data || deterministic_flags) && (
+        <div className="result-block">
+          <h4 className="result-block-title">UPI & Transaction Integrity</h4>
+          
+          {vpa_validation_data && (
+            <>
+              <div className="result-row">
+                <span className="label">VPA (UPI ID) Address</span>
+                <span className="value" style={{ fontFamily: "var(--font-mono)", color: "var(--signal)" }}>
+                  {vpa_validation_data.upi_id || "Not Found"}
+                </span>
+              </div>
+              <div className="result-row">
+                <span className="label">VPA Registry Check</span>
+                <span className={`value ${vpa_validation_data.vpa_exists === true ? "success" : vpa_validation_data.vpa_exists === false ? "danger" : "warn"}`}>
+                  {vpa_validation_data.vpa_exists === true ? "✓ VALID VPA" : vpa_validation_data.vpa_exists === false ? "❌ VPA DOES NOT EXIST" : "⚠ LOOKUP FAILED"}
+                </span>
+              </div>
+              {vpa_validation_data.registered_name && (
+                <div className="result-row">
+                  <span className="label">VPA Registered Name</span>
+                  <span className="value">{vpa_validation_data.registered_name}</span>
+                </div>
+              )}
+              {vpa_validation_data.name_match !== null && (
+                <div className="result-row">
+                  <span className="label">Receiver Name Correlation</span>
+                  <span className={`value ${vpa_validation_data.name_match ? "success" : "warn"}`}>
+                    {vpa_validation_data.name_match ? "✓ MATCHED" : "⚠ MISMATCHED / SUSPICIOUS"}
+                  </span>
+                </div>
+              )}
+            </>
+          )}
+
+          {deterministic_flags && (
+            <div className="result-row" style={{ marginTop: "8px", paddingTop: "8px", borderTop: "1px solid rgba(255,255,255,0.05)" }}>
+              <span className="label">Transaction Replay Attack</span>
+              <span className={`value ${deterministic_flags.replay_detected ? "danger font-extrabold animate-pulse" : "success"}`}>
+                {deterministic_flags.replay_detected 
+                  ? `❌ REPLAY DETECTED (${deterministic_flags.replay_count} times seen)` 
+                  : "✓ UNIQUE (First scan)"}
+              </span>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* ── OCR Data ── */}
       <div className="result-block">
         <h4 className="result-block-title" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
