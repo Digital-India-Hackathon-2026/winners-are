@@ -56,7 +56,7 @@ class AppForensicsService:
 
             deterministic_result.app_authenticity_score = round(blended_score, 3)
 
-            if ai_app and ai_app != "Unknown" and deterministic_result.detected_app == "Unknown":
+            if ai_app and ai_app != "Unknown" and (deterministic_result.detected_app == "Unknown" or not deterministic_result.logo_match):
                 deterministic_result.detected_app = ai_app
 
             if ai_explanation:

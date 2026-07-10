@@ -274,45 +274,43 @@ class AppForensicsEngine:
             is_mobile_ratio = 1.3 < aspect_ratio < 2.5
             
             # Match rules
+            # Match rules
             if claimed_app == "PhonePe":
-                has_phonepe_handle = any(h in raw_text_lower for h in ["@ybl", "@ibl", "@axl"])
-                if purple_pct > 0.03 or purple_pct_header > 0.15 or (purple_pct > 0.005 and has_phonepe_handle):
+                if purple_pct > 0.03 or purple_pct_header > 0.15:
                     detected_app = "PhonePe"
                     logo_match = True
                     explanation = "Authentic PhonePe color profile (#5f259f) and transaction layout verified."
                 else:
-                    detected_app = "PhonePe"
-                    layout_consistency = "MEDIUM"
+                    detected_app = "Unknown"
+                    layout_consistency = "LOW"
                     logo_match = False
-                    authenticity_score = 0.85
-                    explanation = "PhonePe receipt layout verified via model vision structures with varying purple theme elements."
+                    authenticity_score = 0.50
+                    explanation = "Claimed PhonePe app but purple color signature was not detected."
 
             elif claimed_app == "Paytm":
-                has_paytm_handle = "@paytm" in raw_text_lower
-                if cyan_pct > 0.03 or cyan_pct_header > 0.15 or (cyan_pct > 0.005 and has_paytm_handle):
+                if cyan_pct > 0.03 or cyan_pct_header > 0.15:
                     detected_app = "Paytm"
                     logo_match = True
                     explanation = "Authentic Paytm cyan success banners and font metrics validated."
                 else:
-                    detected_app = "Paytm"
-                    layout_consistency = "MEDIUM"
+                    detected_app = "Unknown"
+                    layout_consistency = "LOW"
                     logo_match = False
-                    authenticity_score = 0.82
-                    explanation = "Paytm layout verified via model vision structures with light/cropped theme elements."
+                    authenticity_score = 0.50
+                    explanation = "Claimed Paytm app but cyan color signature was not detected."
 
             elif claimed_app == "Google Pay":
-                has_gpay_handle = any(h in raw_text_lower for h in ["@okaxis", "@okicici", "@oksbi", "@okhdfcbank"])
                 # Google pay uses clean white background or dark grey background, with multi-color branding
-                if white_pct > 0.15 or dark_pct > 0.30 or has_gpay_handle:
+                if white_pct > 0.15 or dark_pct > 0.30:
                     detected_app = "Google Pay"
                     logo_match = True
                     explanation = "Authentic Google Pay layout structure and confirmation spacing matched."
                 else:
-                    detected_app = "Google Pay"
-                    layout_consistency = "MEDIUM"
+                    detected_app = "Unknown"
+                    layout_consistency = "LOW"
                     logo_match = False
-                    authenticity_score = 0.82
-                    explanation = "Google Pay confirmation signature detected with minor layout variations."
+                    authenticity_score = 0.50
+                    explanation = "Claimed Google Pay app but signature theme profile was not detected."
 
             elif claimed_app == "Cred":
                 if dark_pct > 0.35:
@@ -320,24 +318,23 @@ class AppForensicsEngine:
                     logo_match = True
                     explanation = "Sleek dark-glassmorphic CRED receipt structure and font parameters matched."
                 else:
-                    detected_app = "Cred"
-                    layout_consistency = "MEDIUM"
+                    detected_app = "Unknown"
+                    layout_consistency = "LOW"
                     logo_match = False
-                    authenticity_score = 0.80
-                    explanation = "CRED transaction receipt verified under varying theme parameters."
+                    authenticity_score = 0.50
+                    explanation = "Claimed CRED app but dark-glassmorphic theme was not detected."
 
             elif claimed_app == "BHIM":
-                has_bhim_handle = "@upi" in raw_text_lower
-                if white_pct > 0.20 or has_bhim_handle:
+                if white_pct > 0.20:
                     detected_app = "BHIM"
                     logo_match = True
                     explanation = "Authentic BHIM transaction structure matched."
                 else:
-                    detected_app = "BHIM"
-                    layout_consistency = "MEDIUM"
+                    detected_app = "Unknown"
+                    layout_consistency = "LOW"
                     logo_match = False
-                    authenticity_score = 0.80
-                    explanation = "BHIM layout transaction detected with minor color signature deviations."
+                    authenticity_score = 0.50
+                    explanation = "Claimed BHIM app but light theme profile was not detected."
 
             elif claimed_app == "FamPay":
                 if dark_pct > 0.25 or orange_pct > 0.02:
@@ -345,11 +342,11 @@ class AppForensicsEngine:
                     logo_match = True
                     explanation = "FamPay dark theme and signature youth-focused layout verified."
                 else:
-                    detected_app = "FamPay"
-                    layout_consistency = "MEDIUM"
+                    detected_app = "Unknown"
+                    layout_consistency = "LOW"
                     logo_match = False
-                    authenticity_score = 0.82
-                    explanation = "FamPay layout matched with minor color density variation."
+                    authenticity_score = 0.50
+                    explanation = "Claimed FamPay app but theme color profile was not detected."
 
             elif claimed_app == "super.money":
                 if lime_pct > 0.02 or lime_pct_header > 0.08 or white_pct > 0.15:
@@ -357,11 +354,11 @@ class AppForensicsEngine:
                     logo_match = True
                     explanation = "super.money authentic Flipkart-group neon green success banner verified."
                 else:
-                    detected_app = "super.money"
-                    layout_consistency = "MEDIUM"
+                    detected_app = "Unknown"
+                    layout_consistency = "LOW"
                     logo_match = False
-                    authenticity_score = 0.82
-                    explanation = "super.money layout signature detected."
+                    authenticity_score = 0.50
+                    explanation = "Claimed super.money app but lime green color signature was not detected."
 
             elif claimed_app == "Pop UPI":
                 if orange_pct > 0.02 or white_pct > 0.15:
@@ -369,11 +366,11 @@ class AppForensicsEngine:
                     logo_match = True
                     explanation = "Pop UPI authentic orange success banner layout verified."
                 else:
-                    detected_app = "Pop UPI"
-                    layout_consistency = "MEDIUM"
+                    detected_app = "Unknown"
+                    layout_consistency = "LOW"
                     logo_match = False
-                    authenticity_score = 0.82
-                    explanation = "Pop UPI layout signature detected."
+                    authenticity_score = 0.50
+                    explanation = "Claimed Pop UPI app but orange color signature was not detected."
 
             elif claimed_app == "Navi":
                 if lime_pct > 0.02 or white_pct > 0.15:
@@ -381,11 +378,11 @@ class AppForensicsEngine:
                     logo_match = True
                     explanation = "Navi authentic lime-green layout styling verified."
                 else:
-                    detected_app = "Navi"
-                    layout_consistency = "MEDIUM"
+                    detected_app = "Unknown"
+                    layout_consistency = "LOW"
                     logo_match = False
-                    authenticity_score = 0.82
-                    explanation = "Navi theme layout signature detected."
+                    authenticity_score = 0.50
+                    explanation = "Claimed Navi app but lime green color signature was not detected."
 
             elif claimed_app == "Mobikwik":
                 if cyan_pct > 0.02 or white_pct > 0.15:
@@ -393,11 +390,11 @@ class AppForensicsEngine:
                     logo_match = True
                     explanation = "Mobikwik green-blue transaction screen verified."
                 else:
-                    detected_app = "Mobikwik"
-                    layout_consistency = "MEDIUM"
+                    detected_app = "Unknown"
+                    layout_consistency = "LOW"
                     logo_match = False
-                    authenticity_score = 0.82
-                    explanation = "Mobikwik branding detected."
+                    authenticity_score = 0.50
+                    explanation = "Claimed Mobikwik app but cyan color signature was not detected."
 
             elif claimed_app == "Banking App":
                 if white_pct > 0.15 or dark_pct > 0.10:

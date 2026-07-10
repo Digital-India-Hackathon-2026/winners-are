@@ -45,18 +45,6 @@ def _map_nvidia_response_to_fields(data: Dict) -> ExtractedFields:
     payment_app = clean(data.get("payment_app"))
     upi_id = clean(data.get("upi_id"))
 
-    # Secondary app detection from UPI handle if model missed it
-    if not payment_app and upi_id:
-        handle = upi_id.lower()
-        if any(h in handle for h in ["@ybl", "@ibl", "@axl"]):
-            payment_app = "PhonePe"
-        elif "@paytm" in handle:
-            payment_app = "Paytm"
-        elif any(h in handle for h in ["@okaxis", "@okicici", "@oksbi", "@okhdfcbank"]):
-            payment_app = "Google Pay"
-        elif "@upi" in handle:
-            payment_app = "BHIM"
-
     # App detection confidence
     app_conf_map = {
         "Google Pay": 0.92, "PhonePe": 0.91, "Paytm": 0.90,
