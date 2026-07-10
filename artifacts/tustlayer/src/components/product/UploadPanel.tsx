@@ -10,6 +10,7 @@ type UploadPanelProps = {
   isScanning: boolean;
   hasResults: boolean;
   onLoadDemo: () => void;
+  errorMsg?: string | null;
 };
 
 export function UploadPanel({
@@ -20,6 +21,7 @@ export function UploadPanel({
   isScanning,
   hasResults,
   onLoadDemo,
+  errorMsg,
 }: UploadPanelProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -126,6 +128,12 @@ export function UploadPanel({
         >
           {isScanning ? "Scanning..." : "Execute Forensic Scan"}
         </button>
+
+        {errorMsg && (
+          <p style={{ marginTop: "12px", fontSize: "0.78rem", color: "#ff4d2e", textAlign: "center", fontWeight: 700, background: "rgba(255, 77, 46, 0.08)", border: "1px solid rgba(255, 77, 46, 0.16)", borderRadius: "8px", padding: "10px" }}>
+            {errorMsg}
+          </p>
+        )}
       </div>
     </div>
   );

@@ -14,8 +14,19 @@ export default function ProductPage() {
   const [uploadedName,  setUploadedName]  = useState<string>("");
   const [isScanning,    setIsScanning]    = useState<boolean>(false);
   const [scanResults,   setScanResults]   = useState<any>(null);
+  const [errorMsg,      setErrorMsg]      = useState<string | null>(null);
 
   const handleFileSelect = (file: File) => {
+    if (file.size > 4.5 * 1024 * 1024) {
+      setErrorMsg("File exceeds Vercel's 4.5MB serverless size limit. Please upload a smaller document.");
+      setSelectedFile(null);
+      setUploadedImage(null);
+      setUploadedName("");
+      setScanResults(null);
+      return;
+    }
+    
+    setErrorMsg(null);
     setSelectedFile(file);
     setUploadedName(file.name);
     setScanResults(null);
@@ -36,6 +47,7 @@ export default function ProductPage() {
   const handleScan = async () => {
     if (!selectedFile && !uploadedImage) return;
     setIsScanning(true);
+    setErrorMsg(null);
     try {
       const formData = new FormData();
       if (selectedFile) {
@@ -47,10 +59,14 @@ export default function ProductPage() {
       }
 
       const response = await fetch("/api/v1/scan/unified", { method: "POST", body: formData });
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      if (response.status === 413) {
+        throw new Error("File exceeds Vercel's 4.5MB size limit. Please compress the document.");
+      }
+      if (!response.ok) throw new Error(`HTTP Error ${response.status}`);
       setScanResults(await response.json());
-    } catch (err) {
+    } catch (err: any) {
       console.error("Forensic scan failed:", err);
+      setErrorMsg(err.message || "Forensic scan failed");
     } finally {
       setIsScanning(false);
     }
@@ -60,6 +76,7 @@ export default function ProductPage() {
     setSelectedFile(null);
     setUploadedName("phonepe_receipt_demo.svg");
     setScanResults(null);
+    setErrorMsg(null);
     const demoSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="360" height="640" viewBox="0 0 360 640">
   <rect width="360" height="640" fill="#0f0f15"/>
   <rect width="360" height="56" fill="#5f259f"/>
@@ -97,6 +114,7 @@ export default function ProductPage() {
           isScanning={isScanning}
           hasResults={!!scanResults}
           onLoadDemo={handleLoadDemo}
+          errorMsg={errorMsg}
         />
         <PhonePreview uploadedImage={uploadedImage} isScanning={isScanning} />
         <ResultsPanel results={scanResults} isScanning={isScanning} />
