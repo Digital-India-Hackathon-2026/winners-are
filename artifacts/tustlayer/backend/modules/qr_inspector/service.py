@@ -47,7 +47,9 @@ class QRInspectorService:
                 )
 
             # Determine risk level
-            critical_flags = analysis["foreign_currency"] or (analysis["unknown_vpa"] and not analysis["is_upi"])
+            # Determine risk level
+            has_untrusted_domain = any("⚠ Untrusted" in sig or "⚠ Failed" in sig for sig in all_signals)
+            critical_flags = analysis["foreign_currency"] or (analysis["unknown_vpa"] and not analysis["is_upi"]) or has_untrusted_domain
             medium_flags = analysis["amount_hardcoded"] or analysis["suspicious_uri"] or analysis["unknown_vpa"]
 
             if critical_flags or multiple_qr:
@@ -57,7 +59,7 @@ class QRInspectorService:
             elif analysis["is_upi"]:
                 risk_level = "LOW"
             else:
-                risk_level = "MEDIUM"
+                risk_level = "LOW"
 
             explanation = (
                 f"Found {qr_count} QR code(s). "

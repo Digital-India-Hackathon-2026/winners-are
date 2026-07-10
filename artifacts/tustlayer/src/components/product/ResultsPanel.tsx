@@ -357,17 +357,21 @@ export function ResultsPanel({ results, isScanning }: ResultsPanelProps) {
         </div>
         
         <div className="result-block" style={{ textAlign: "center", padding: "24px 0 8px" }}>
-          <div className="result-score-number" style={{ color: qr.risk_level === "HIGH" ? "#ff4d2e" : "#31f58b" }}>
+          <div className="result-score-number" style={{
+            color: qr.risk_level === "HIGH" ? "#ff4d2e" : qr.risk_level === "MEDIUM" ? "#ffb22e" : "#31f58b"
+          }}>
             {isUpi ? "UPI QR" : "URL QR"}
           </div>
           <div className="result-score-label">Payload Type</div>
           <div className="result-verdict" style={{
-            borderColor: qr.risk_level === "HIGH" ? "#ff4d2e55" : "#31f58b55",
-            background: qr.risk_level === "HIGH" ? "#ff4d2e0a" : "#31f58b0a"
+            borderColor: qr.risk_level === "HIGH" ? "#ff4d2e55" : qr.risk_level === "MEDIUM" ? "#ffb22e55" : "#31f58b55",
+            background: qr.risk_level === "HIGH" ? "#ff4d2e0a" : qr.risk_level === "MEDIUM" ? "#ffb22e0a" : "#31f58b0a"
           }}>
             <span>Verdict</span>
-            <strong style={{ color: qr.risk_level === "HIGH" ? "#ff4d2e" : "#31f58b" }}>
-              {qr.risk_level === "HIGH" ? "⚠ Suspicious Payload" : "✓ Appears Secure"}
+            <strong style={{
+              color: qr.risk_level === "HIGH" ? "#ff4d2e" : qr.risk_level === "MEDIUM" ? "#ffb22e" : "#31f58b"
+            }}>
+              {qr.risk_level === "HIGH" ? "❌ High Risk Payload" : qr.risk_level === "MEDIUM" ? "⚠ Suspicious Payload" : "✓ Secure Payload"}
             </strong>
           </div>
         </div>
