@@ -47,10 +47,12 @@ class AppForensicsService:
 
             blended_score = deterministic_result.app_authenticity_score * 0.65 + ai_confidence * 0.35
 
-            if not ai_match:
+            if not ai_match and ai_confidence >= 0.80:
                 blended_score = min(blended_score, 0.70)
                 deterministic_result.suspected_clone = True
                 deterministic_result.layout_consistency = "LOW"
+            elif ai_match:
+                deterministic_result.layout_consistency = "HIGH"
 
             deterministic_result.app_authenticity_score = round(blended_score, 3)
 

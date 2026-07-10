@@ -552,18 +552,8 @@ export function ResultsPanel({ results, isScanning }: ResultsPanelProps) {
         <h4 className="result-block-title">Scan Metadata</h4>
         <div className="result-row">
           <span className="label">Execution Time</span>
-          <span className="value">{metadata.execution_time_ms}ms</span>
+          <span className="value">{(metadata.execution_time_ms / 1000).toFixed(2)}s</span>
         </div>
-        <div className="result-row">
-          <span className="label">Modules Run</span>
-          <span className="value">{metadata.modules_executed?.length ?? "—"}</span>
-        </div>
-        {results.remaining_scans != null && results.remaining_scans >= 0 && (
-          <div className="result-row">
-            <span className="label">Scans Remaining</span>
-            <span className="value">{results.remaining_scans}</span>
-          </div>
-        )}
       </div>
     </div>
   );

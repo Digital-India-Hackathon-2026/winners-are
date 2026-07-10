@@ -25,6 +25,10 @@ VALID_UPI_HANDLES = {
     "@centralbank", "@csbpay", "@dcb", "@jkb",
     "@kvb", "@lvb", "@scb", "@unionbank",
     "@zoicici", "@freecharge", "@airtelpaymentsbank",
+    # Paytm and Partner UPI handles
+    "@pthdfc", "@ptaxis", "@ptsbi", "@ptyes", "@superyes",
+    # WhatsApp UPI handles
+    "@waaxis", "@wahdfc", "@wasbi",
 }
 
 UPI_VPA_REGEX = re.compile(r'^[\w.\-]{2,256}@[\w]{2,64}$')
@@ -61,6 +65,7 @@ class VPAValidatorService:
         self.key_id = settings.RAZORPAY_KEY_ID
         self.key_secret = settings.RAZORPAY_KEY_SECRET
         self.razorpay_available = bool(self.key_id and self.key_secret)
+        print(f"[VPA-VALIDATOR] Init: key_id_present={bool(self.key_id)}, key_secret_present={bool(self.key_secret)}, available={self.razorpay_available}")
 
     async def validate(self, upi_id: str, receiver_name: Optional[str] = None) -> VPALookupResult:
         """

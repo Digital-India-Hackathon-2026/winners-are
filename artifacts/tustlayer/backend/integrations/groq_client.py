@@ -173,6 +173,10 @@ class GroqReasoningProvider(ReasoningProvider):
                     "content": (
                         "You are a financial fraud prevention advisor for India. "
                         "Generate 3-4 SHORT, specific, actionable recommended steps (max 15 words each). "
+                        "If the risk level is high or fraudulent transaction is suspected, you MUST include: "
+                        "1. Call the national cyber fraud helpline 1930 immediately. "
+                        "2. Report the incident on the National Cyber Crime Reporting Portal (cybercrime.gov.in). "
+                        "3. File a complaint on the National Consumer Helpline (NCH). "
                         "Tailor them to the risk level and specific fraud signals detected. No preamble."
                     )
                 },
@@ -201,6 +205,7 @@ class GroqReasoningProvider(ReasoningProvider):
                     "content": (
                         "You are an expert Indian UPI payments advisor. "
                         "Generate 3 simple, direct, sequential next steps (max 10 words each) for the merchant receiving this payment proof. "
+                        "If the proof is suspected fake/manipulated, prioritize calling the cyber helpline 1930 and reporting to cybercrime.gov.in. "
                         "Focus on quick validation actions. Output ONLY the bullets. No numbering. No headers. No preamble."
                     )
                 },
