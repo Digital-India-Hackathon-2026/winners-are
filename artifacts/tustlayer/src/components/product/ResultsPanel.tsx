@@ -254,13 +254,178 @@ export function ResultsPanel({ results, isScanning }: ResultsPanelProps) {
   if (!results) {
     return (
       <div className="product-panel results-panel" style={{ display: "grid", placeItems: "center", minHeight: "300px", padding: "20px", textAlign: "center", color: "var(--foreground-dim)" }}>
-        <p>Upload a screenshot and execute a scan to see forensic results.</p>
+        <p>Upload any transaction proof (image or PDF) or scan a QR code to see automated forensic results.</p>
       </div>
     );
   }
 
+  // 1. PDF File Results
+  if (results.file_type === "pdf" && results.document_result) {
+    const doc = results.document_result;
+    return (
+      <div className="product-panel results-panel">
+        <div className="product-panel-header">
+          <span className="dot" /> Document Forensic Results
+        </div>
+        
+        <div className="result-block" style={{ textAlign: "center", padding: "24px 0 8px" }}>
+          <div className="result-score-number" style={{ color: doc.risk_level === "LOW" ? "#31f58b" : doc.risk_level === "MEDIUM" ? "#ffb22e" : "#ff4d2e" }}>
+            {doc.risk_level}
+          </div>
+          <div className="result-score-label">Document Threat Risk Level</div>
+          <div className="result-verdict" style={{
+            borderColor: doc.risk_level === "LOW" ? "#31f58b55" : "#ff4d2e55",
+            background: doc.risk_level === "LOW" ? "#31f58b0a" : "#ff4d2e0a"
+          }}>
+            <span>Verdict</span>
+            <strong style={{ color: doc.risk_level === "LOW" ? "#31f58b" : "#ff4d2e" }}>
+              {doc.risk_level === "LOW" ? "✓ Appears Legitimate" : "⚠ Suspected Threat"}
+            </strong>
+          </div>
+        </div>
+
+        <div className="result-block">
+          <h4 className="result-block-title">File Details</h4>
+          <div className="result-row">
+            <span className="label">Document Type</span>
+            <span className="value">{doc.document_type.toUpperCase()}</span>
+          </div>
+          <div className="result-row">
+            <span className="label">Page Count</span>
+            <span className="value">{doc.page_count}</span>
+          </div>
+        </div>
+
+        <div className="result-block">
+          <h4 className="result-block-title">Document Heuristics</h4>
+          <div className="result-row">
+            <span className="label">Steganography Check</span>
+            <span className={`value ${doc.steganography_suspected ? "danger" : "success"}`}>
+              {doc.steganography_suspected ? "⚠ SUSPICIOUS" : "✓ PASS"}
+            </span>
+          </div>
+          <div className="result-row">
+            <span className="label">Embedded JS / Triggers</span>
+            <span className={`value ${doc.pdf_javascript_found || doc.pdf_auto_action_found ? "danger" : "success"}`}>
+              {doc.pdf_javascript_found || doc.pdf_auto_action_found ? "⚠ DETECTED" : "✓ PASS"}
+            </span>
+          </div>
+          <div className="result-row">
+            <span className="label">Embedded Files count</span>
+            <span className="value">{doc.embedded_file_count}</span>
+          </div>
+        </div>
+
+        {doc.urls_found.length > 0 && (
+          <div className="result-block">
+            <h4 className="result-block-title">URL Safety Scan ({doc.urls_found.length} links)</h4>
+            <div className="result-row">
+              <span className="label">URL Risk level</span>
+              <span className={`value ${doc.url_risk_level === "HIGH" ? "danger" : doc.url_risk_level === "MEDIUM" ? "warn" : "success"}`}>
+                {doc.url_risk_level}
+              </span>
+            </div>
+            <ul style={{ padding: 0, margin: "8px 0 0 0", listStyle: "none" }}>
+              {doc.url_analysis.slice(0, 4).map((urlData: any, idx: number) => (
+                <li key={idx} className="result-reason" style={{ borderLeftColor: urlData.risk === "HIGH" ? "var(--ember)" : "var(--warn)" }}>
+                  <strong>{urlData.url}</strong>: {urlData.reasons.join(", ") || "Safe domain"}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        <div className="result-block">
+          <h4 className="result-block-title">Forensic Assessment</h4>
+          <p className="result-reason" style={{ borderLeftColor: doc.risk_level === "LOW" ? "#31f58b" : "#ff4d2e" }}>
+            {doc.explanation}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // 2. QR Code Scanner Results
+  if (results.file_type === "qr" && results.qr_result) {
+    const qr = results.qr_result;
+    const isUpi = qr.is_upi;
+    const p = qr.upi_payload;
+    return (
+      <div className="product-panel results-panel">
+        <div className="product-panel-header">
+          <span className="dot" /> QR Code Analysis
+        </div>
+        
+        <div className="result-block" style={{ textAlign: "center", padding: "24px 0 8px" }}>
+          <div className="result-score-number" style={{ color: qr.risk_level === "HIGH" ? "#ff4d2e" : "#31f58b" }}>
+            {isUpi ? "UPI QR" : "URL QR"}
+          </div>
+          <div className="result-score-label">Payload Type</div>
+          <div className="result-verdict" style={{
+            borderColor: qr.risk_level === "HIGH" ? "#ff4d2e55" : "#31f58b55",
+            background: qr.risk_level === "HIGH" ? "#ff4d2e0a" : "#31f58b0a"
+          }}>
+            <span>Verdict</span>
+            <strong style={{ color: qr.risk_level === "HIGH" ? "#ff4d2e" : "#31f58b" }}>
+              {qr.risk_level === "HIGH" ? "⚠ Suspicious Payload" : "✓ Appears Secure"}
+            </strong>
+          </div>
+        </div>
+
+        {isUpi && p ? (
+          <div className="result-block">
+            <h4 className="result-block-title">UPI Parameters</h4>
+            <div className="result-row">
+              <span className="label">VPA (Receiver Address)</span>
+              <span className="value" style={{ color: "var(--signal)" }}>{p.pa}</span>
+            </div>
+            <div className="result-row">
+              <span className="label">Receiver Name</span>
+              <span className="value">{p.pn || "N/A"}</span>
+            </div>
+            <div className="result-row">
+              <span className="label">Hardcoded Amount</span>
+              <span className="value">{p.am ? `₹${p.am}` : "User input requested"}</span>
+            </div>
+            <div className="result-row">
+              <span className="label">Currency</span>
+              <span className="value">{p.cu || "INR"}</span>
+            </div>
+            <div className="result-row">
+              <span className="label">Verified Merchant Sign</span>
+              <span className={`value ${p.sign ? "success" : "warn"}`}>
+                {p.sign ? "✓ Present" : "⚠ None (Personal QR)"}
+              </span>
+            </div>
+          </div>
+        ) : (
+          <div className="result-block">
+            <h4 className="result-block-title">QR Payload Link</h4>
+            <p className="result-reason" style={{ wordBreak: "break-all", fontStyle: "italic" }}>
+              {qr.raw_qr_data}
+            </p>
+          </div>
+        )}
+
+        <div className="result-block">
+          <h4 className="result-block-title">Risk Signals</h4>
+          <ul style={{ padding: 0, margin: "8px 0 0 0", listStyle: "none" }}>
+            {qr.risk_signals && qr.risk_signals.length > 0 ? (
+              qr.risk_signals.map((sig: string, idx: number) => (
+                <li key={idx} className="result-reason" style={{ borderLeftColor: "var(--ember)" }}>{sig}</li>
+              ))
+            ) : (
+              <li className="result-action" style={{ borderLeftColor: "var(--success)" }}>All QR integrity validations passed.</li>
+            )}
+          </ul>
+        </div>
+      </div>
+    );
+  }
+
+  const screenshotData = results.screenshot_result || (results as any);
   const { trust_score_data, ocr_data, fraud_intelligence_data, metadata,
-          deepfake_data, vpa_validation_data, deterministic_flags, app_forensics } = results;
+          deepfake_data, vpa_validation_data, deterministic_flags, app_forensics } = screenshotData;
 
   const finalVerdict  = trust_score_data.verdict || "Analysis Complete";
   const verdictStyle  = getVerdictStyle(finalVerdict);

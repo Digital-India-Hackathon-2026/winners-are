@@ -1,41 +1,52 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { UploadPanel } from "@/components/product/UploadPanel";
 import { PhonePreview } from "@/components/product/PhonePreview";
-import { ResultsPanel, ScanResponse } from "@/components/product/ResultsPanel";
+import { ResultsPanel } from "@/components/product/ResultsPanel";
 import { useLenisScroll } from "@/hooks/useLenisScroll";
 
 export default function ProductPage() {
   useLenisScroll();
 
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
+  const [selectedFile,  setSelectedFile]  = useState<File | null>(null);
   const [uploadedName,  setUploadedName]  = useState<string>("");
   const [isScanning,    setIsScanning]    = useState<boolean>(false);
-  const [scanResults,   setScanResults]   = useState<ScanResponse>(null);
+  const [scanResults,   setScanResults]   = useState<any>(null);
 
   const handleFileSelect = (file: File) => {
+    setSelectedFile(file);
     setUploadedName(file.name);
     setScanResults(null);
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      if (e.target?.result && typeof e.target.result === "string") {
-        setUploadedImage(e.target.result);
-      }
-    };
-    reader.readAsDataURL(file);
+    
+    if (file.type === "application/pdf") {
+      setUploadedImage("pdf-placeholder");
+    } else {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        if (e.target?.result && typeof e.target.result === "string") {
+          setUploadedImage(e.target.result);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleScan = async () => {
-    if (!uploadedImage) return;
+    if (!selectedFile && !uploadedImage) return;
     setIsScanning(true);
     try {
-      const blob     = await (await fetch(uploadedImage)).blob();
       const formData = new FormData();
-      formData.append("file", blob, uploadedName || "screenshot.png");
+      if (selectedFile) {
+        formData.append("file", selectedFile);
+      } else {
+        // Fallback for svg/demo loading
+        const blob = await (await fetch(uploadedImage!)).blob();
+        formData.append("file", blob, uploadedName || "screenshot.png");
+      }
 
-      const response = await fetch("/api/v1/scan/execute", { method: "POST", body: formData });
+      const response = await fetch("/api/v1/scan/unified", { method: "POST", body: formData });
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       setScanResults(await response.json());
     } catch (err) {
@@ -46,6 +57,7 @@ export default function ProductPage() {
   };
 
   const handleLoadDemo = () => {
+    setSelectedFile(null);
     setUploadedName("phonepe_receipt_demo.svg");
     setScanResults(null);
     const demoSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="360" height="640" viewBox="0 0 360 640">
@@ -76,11 +88,6 @@ export default function ProductPage() {
 
   return (
     <div className="product-page">
-      <div className="tool-switcher">
-        <Link href="/product" className="tool-tab tool-tab--active">Screenshot Scan</Link>
-        <Link href="/product/qr" className="tool-tab">QR Inspector</Link>
-        <Link href="/product/document" className="tool-tab">Document Scanner</Link>
-      </div>
       <div className="product-layout">
         <UploadPanel
           onFileSelect={handleFileSelect}

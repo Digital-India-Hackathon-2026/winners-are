@@ -26,7 +26,7 @@ export function UploadPanel({
   const handleDrop = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     const file = e.dataTransfer.files?.[0];
-    if (file && file.type.startsWith("image/")) {
+    if (file && (file.type.startsWith("image/") || file.type === "application/pdf")) {
       onFileSelect(file);
     }
   };
@@ -37,7 +37,7 @@ export function UploadPanel({
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file && file.type.startsWith("image/")) {
+    if (file && (file.type.startsWith("image/") || file.type === "application/pdf")) {
       onFileSelect(file);
     }
     // Reset input so the same file can be selected again
@@ -60,13 +60,13 @@ export function UploadPanel({
           <p>
             <strong>Click to upload</strong> or drag and drop
           </p>
-          <div className="format-hint">PNG, JPG, JPEG</div>
+          <div className="format-hint">PNG, JPG, JPEG, PDF</div>
           <input
             type="file"
             ref={fileInputRef}
             className="hidden"
             style={{ display: "none" }}
-            accept="image/*"
+            accept="image/*,application/pdf"
             onChange={handleFileChange}
           />
         </div>
@@ -98,7 +98,24 @@ export function UploadPanel({
 
         {uploadedImage && (
           <div className="upload-preview">
-            <img src={uploadedImage} alt="Uploaded receipt" />
+            {uploadedImage === "pdf-placeholder" ? (
+              <div style={{
+                padding: "24px",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                background: "rgba(255, 255, 255, 0.02)",
+                borderRadius: "var(--radius-sm)",
+                border: "1px solid var(--border)"
+              }}>
+                <span style={{ fontSize: "2.5rem" }}>📄</span>
+                <span style={{ fontSize: "0.8rem", color: "var(--foreground-muted)", marginTop: "8px", fontWeight: "bold", wordBreak: "break-all" }}>
+                  {uploadedName}
+                </span>
+              </div>
+            ) : (
+              <img src={uploadedImage} alt="Uploaded proof" />
+            )}
           </div>
         )}
 
