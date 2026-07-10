@@ -1078,6 +1078,7 @@ body {
   margin: 0 auto;
   padding: 24px clamp(16px, 3vw, 32px);
   min-height: calc(100svh - 80px);
+  align-items: stretch;
 }
 
 @media (max-width: 1200px) {
@@ -1096,6 +1097,9 @@ body {
   overflow: hidden;
   box-shadow: 0 10px 30px -10px rgba(var(--shadow-rgb), 0.15);
   transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
 .product-panel:hover {
@@ -1259,8 +1263,7 @@ body {
 
 /* Results panel (right) */
 .results-panel {
-  overflow-y: auto;
-  max-height: calc(100svh - 104px);
+  height: 100%;
 }
 
 .result-block {
