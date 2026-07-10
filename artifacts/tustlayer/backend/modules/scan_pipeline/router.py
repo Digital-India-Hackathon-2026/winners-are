@@ -1,10 +1,23 @@
-from fastapi import APIRouter, Depends, File, UploadFile, HTTPException, status, Response
+from fastapi import APIRouter, Depends, File, UploadFile, HTTPException, status, Response, Form
 from fastapi.responses import StreamingResponse
+from typing import Optional
+import httpx
 from backend.modules.scan_pipeline.schemas import FinalScanResponse
 from backend.modules.scan_pipeline.service import ScanPipelineService, get_scan_pipeline_service
 from backend.modules.scan_pipeline.middleware import get_session_or_user
 
 router = APIRouter(prefix="/api/v1/scan", tags=["Scan Pipeline"])
+
+async def get_bytes(file: Optional[UploadFile] = File(None), file_url: Optional[str] = Form(None)):
+    if file_url:
+        async with httpx.AsyncClient() as client:
+            resp = await client.get(file_url)
+            if resp.status_code != 200:
+                raise HTTPException(status_code=400, detail="Could not download file from URL")
+            return resp.content
+    if file:
+        return await file.read()
+    raise HTTPException(status_code=400, detail="Either file or file_url must be provided")
 
 @router.post("/execute", response_model=FinalScanResponse)
 async def execute_scan(
@@ -80,7 +93,8 @@ async def stream_scan(
 @router.post("/unified")
 async def execute_unified_scan(
     response: Response,
-    file: UploadFile = File(...),
+    file: Optional[UploadFile] = File(None),
+    file_url: Optional[str] = Form(None),
     service: ScanPipelineService = Depends(get_scan_pipeline_service),
     context: dict = Depends(get_session_or_user)
 ):
@@ -90,16 +104,28 @@ async def execute_unified_scan(
     QRInspectorService, or the standard transaction image verification pipeline.
     """
     try:
-        filename = file.filename or ""
-        content_type = file.content_type or ""
-        
-        # Read a small chunk to check PDF magic bytes safely
-        header_chunk = await file.read(4)
-        is_pdf = "pdf" in content_type.lower() or filename.lower().endswith(".pdf") or header_chunk == b"%PDF"
-        
-        # Reset pointer for full read
-        await file.seek(0)
-        file_bytes = await file.read()
+        if file_url:
+            async with httpx.AsyncClient() as client:
+                download_resp = await client.get(file_url)
+                if download_resp.status_code != 200:
+                    raise HTTPException(status_code=400, detail="Failed to fetch file from storage URL.")
+                file_bytes = download_resp.content
+                filename = file_url.split("/")[-1].split("?")[0]
+                content_type = download_resp.headers.get("content-type", "")
+                is_pdf = "pdf" in content_type.lower() or filename.lower().endswith(".pdf") or file_bytes[:4] == b"%PDF"
+        else:
+            if not file:
+                raise HTTPException(status_code=400, detail="Either file or file_url must be provided.")
+            filename = file.filename or ""
+            content_type = file.content_type or ""
+            
+            # Read a small chunk to check PDF magic bytes safely
+            header_chunk = await file.read(4)
+            is_pdf = "pdf" in content_type.lower() or filename.lower().endswith(".pdf") or header_chunk == b"%PDF"
+            
+            # Reset pointer for full read
+            await file.seek(0)
+            file_bytes = await file.read()
         
         # 1. PDF Document routing
         if is_pdf:

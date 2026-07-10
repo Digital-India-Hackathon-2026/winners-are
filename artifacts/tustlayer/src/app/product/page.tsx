@@ -17,8 +17,8 @@ export default function ProductPage() {
   const [errorMsg,      setErrorMsg]      = useState<string | null>(null);
 
   const handleFileSelect = (file: File) => {
-    if (file.size > 4.5 * 1024 * 1024) {
-      setErrorMsg("File exceeds Vercel's 4.5MB serverless size limit. Please upload a smaller document.");
+    if (file.size > 50 * 1024 * 1024) {
+      setErrorMsg("File exceeds 50MB size limit. Please upload a smaller document.");
       setSelectedFile(null);
       setUploadedImage(null);
       setUploadedName("");
@@ -51,7 +51,29 @@ export default function ProductPage() {
     try {
       const formData = new FormData();
       if (selectedFile) {
-        formData.append("file", selectedFile);
+        // Direct-to-Storage upload to Supabase Storage to bypass Vercel 4.5MB API payload limits
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://eohswgvomkiuvijxklvl.supabase.co";
+        const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVvaHN3Z3ZvbWtpdXZpanhrbHZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyMzQ0MzYsImV4cCI6MjA5NjgxMDQzNn0.SXJO_jhF9JlGxYrEbgDQLUYo426BF2yLQZk-Klxvmaw";
+        
+        const uniquePath = `uploads/${Date.now()}-${selectedFile.name.replace(/[^a-zA-Z0-9.-]/g, "_")}`;
+        const uploadUrl = `${supabaseUrl}/storage/v1/object/scans/${uniquePath}`;
+        
+        const uploadResponse = await fetch(uploadUrl, {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${supabaseKey}`,
+            "Content-Type": selectedFile.type,
+            "x-upsert": "true"
+          },
+          body: selectedFile
+        });
+        
+        if (!uploadResponse.ok) {
+          throw new Error("Direct storage upload failed. Verify your Supabase Storage scans bucket.");
+        }
+        
+        const publicUrl = `${supabaseUrl}/storage/v1/object/public/scans/${uniquePath}`;
+        formData.append("file_url", publicUrl);
       } else {
         // Fallback for svg/demo loading
         const blob = await (await fetch(uploadedImage!)).blob();
@@ -60,7 +82,7 @@ export default function ProductPage() {
 
       const response = await fetch("/api/v1/scan/unified", { method: "POST", body: formData });
       if (response.status === 413) {
-        throw new Error("File exceeds Vercel's 4.5MB size limit. Please compress the document.");
+        throw new Error("File exceeds upload limit.");
       }
       if (!response.ok) throw new Error(`HTTP Error ${response.status}`);
       setScanResults(await response.json());
