@@ -248,7 +248,7 @@ def format_screenshot_result(data: dict, is_senior: bool = False) -> str:
     is_df = deepfake.get("is_deepfake", False)
     risk_level = "High Risk" if ts.get("risk_level") == "HIGH" else "Be Careful" if ts.get("risk_level") == "MEDIUM" else "Safe"
     
-    # Prioritize dynamic findings from the pipeline and translate technical jargon to layman terms
+    # Prioritize dynamic findings from the pipeline directly
     reasons = ts.get("confidence_reasoning", [])
     if reasons:
         summary = ts.get("verdict") or {
@@ -257,32 +257,7 @@ def format_screenshot_result(data: dict, is_senior: bool = False) -> str:
             "Safe": "We believe this payment proof is authentic and safe."
         }.get(risk_level, "Suspicious activity detected.")
         
-        replacements = {
-            "EXIF metadata": "hidden file history details",
-            "EXIF": "file history",
-            "metadata": "hidden file details",
-            "steganography": "hidden text/images",
-            "pHash": "visual layout fingerprint",
-            "perceptual hash": "visual template",
-            "VPA handle": "UPI address suffix",
-            "VPA": "UPI payment ID",
-            "Razorpay live check": "live payment network verification",
-            "baseline alignment": "text spacing alignment check",
-            "ELA": "digital editing compression test",
-            "compression mismatch": "evidence of local editing",
-            "authenticity check": "security template match"
-        }
-        
-        # Compile a single regex matching word boundaries for any key, sorted by length descending
-        sorted_keys = sorted(replacements.keys(), key=len, reverse=True)
-        pattern = re.compile("|".join(r"\b{}\b".format(re.escape(k)) for k in sorted_keys), re.IGNORECASE)
-
-        layman_reasons = []
-        for r in reasons:
-            lr = pattern.sub(lambda m: replacements[next(k for k in sorted_keys if k.lower() == m.group(0).lower())], r)
-            layman_reasons.append(lr)
-            
-        why_concerned = "\n".join([f"• {r}" for r in layman_reasons])
+        why_concerned = "\n".join([f"• {r}" for r in reasons])
         actions = ts.get("what_to_do_next") or ts.get("recommended_actions") or []
         
         if risk_level == "Safe":
