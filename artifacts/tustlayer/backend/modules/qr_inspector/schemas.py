@@ -20,6 +20,8 @@ class QRInspectionResult(BaseModel):
     qr_found: bool = False
     qr_count: int = 0
     is_upi_qr: bool = False
+    is_upi: bool = False
+    raw_qr_data: Optional[str] = None
     upi_payload: Optional[UPIQRPayload] = None
 
     # Risk signals
@@ -35,3 +37,17 @@ class QRInspectionResult(BaseModel):
     resolved_url: Optional[str] = Field(None, description="Final URL after redirect resolution")
     explanation: str = ""
     error: Optional[str] = None
+
+    # New multi-layer QR verification fields (v2.2)
+    qr_type: str = Field("Unknown", description="UPI Payment, Website URL, Contact, Email, SMS, WiFi, Plain Text, Unknown")
+    qr_format_valid: bool = True
+    missing_mandatory_params: List[str] = Field(default_factory=list)
+    duplicate_params: List[str] = Field(default_factory=list)
+    ocr_cross_matched: Optional[bool] = None
+    ocr_mismatches: List[str] = Field(default_factory=list)
+    safe_browsing_threat: Optional[bool] = None
+    domain_reputation_score: float = 100.0
+    image_authenticity_issues: List[str] = Field(default_factory=list)
+    verdict: str = Field("Needs Verification", description="Verified / Needs Verification / Likely Fraud")
+    guidance: str = ""
+    hash_sha256: str = ""

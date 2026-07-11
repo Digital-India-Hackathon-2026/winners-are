@@ -21,8 +21,18 @@ class QRInspectorService:
                     explanation="No QR code found in image.",
                 )
 
-            # Analyze the first (primary) QR
-            analysis = await self.engine.analyze_qr_data(qr_texts[0])
+            # Perform surrounding OCR for cross-validation if a QR is found
+            ocr_res = None
+            try:
+                from backend.modules.ocr.service import get_ocr_service
+                ocr_serv = get_ocr_service()
+                ocr_res = await ocr_serv.extract_payment_proof(image_bytes)
+                print(f"[QR-SERVICE] Successfully extracted surrounding OCR for cross-validation.")
+            except Exception as ocr_err:
+                print(f"[QR-SERVICE] Surrounding OCR extraction failed: {ocr_err}")
+
+            # Analyze the first (primary) QR using the multi-layer engine
+            analysis = await self.engine.analyze_qr_data(qr_texts[0], image_bytes=image_bytes, ocr_result=ocr_res)
             all_signals = list(analysis["risk_signals"])
 
             multiple_qr = qr_count > 1
@@ -46,25 +56,22 @@ class QRInspectorService:
                     sign=p.get("sign"),
                 )
 
-            # Determine risk level
-            # Determine risk level
-            has_untrusted_domain = any("⚠ Untrusted" in sig or "⚠ Failed" in sig for sig in all_signals)
-            critical_flags = analysis["foreign_currency"] or (analysis["unknown_vpa"] and not analysis["is_upi"]) or has_untrusted_domain or analysis.get("google_safe_browsing_threat", False)
-            medium_flags = analysis["amount_hardcoded"] or analysis["suspicious_uri"] or analysis["unknown_vpa"]
-
-            if critical_flags or multiple_qr:
-                risk_level = "HIGH"
-            elif medium_flags:
+            # Determine risk level from deterministic engine score
+            engine_score = analysis.get("score", 100.0)
+            if engine_score >= 80:
+                risk_level = "LOW"
+            elif engine_score >= 40:
                 risk_level = "MEDIUM"
-            elif analysis["is_upi"]:
-                risk_level = "LOW"
             else:
-                risk_level = "LOW"
+                risk_level = "HIGH"
+
+            # Override/adjust if critical flags are present
+            if multiple_qr:
+                risk_level = "HIGH"
 
             explanation = (
-                f"Found {qr_count} QR code(s). "
-                + ("UPI QR detected. " if analysis["is_upi"] else "Non-UPI QR code. ")
-                + (f"Risk: {risk_level}.")
+                f"Found {qr_count} QR code(s). Type: {analysis['qr_type']}. "
+                f"Verdict: {analysis['verdict']} (Score: {engine_score:.0f}/100). Risk: {risk_level}."
             )
 
             return QRInspectionResult(
@@ -72,6 +79,8 @@ class QRInspectorService:
                 qr_found=True,
                 qr_count=qr_count,
                 is_upi_qr=analysis["is_upi"],
+                is_upi=analysis["is_upi"],
+                raw_qr_data=qr_texts[0],
                 upi_payload=upi_payload,
                 foreign_currency=analysis["foreign_currency"],
                 amount_hardcoded=analysis["amount_hardcoded"],
@@ -83,10 +92,26 @@ class QRInspectorService:
                 risk_signals=all_signals,
                 resolved_url=analysis.get("resolved_url"),
                 explanation=explanation,
+                
+                # New v2.2 Engine fields
+                qr_type=analysis["qr_type"],
+                qr_format_valid=analysis["qr_format_valid"],
+                missing_mandatory_params=analysis["missing_mandatory_params"],
+                duplicate_params=analysis["duplicate_params"],
+                ocr_cross_matched=analysis["ocr_cross_matched"],
+                ocr_mismatches=analysis["ocr_mismatches"],
+                safe_browsing_threat=analysis["safe_browsing_threat"],
+                domain_reputation_score=analysis["domain_reputation_score"],
+                image_authenticity_issues=analysis["image_authenticity_issues"],
+                verdict=analysis["verdict"],
+                guidance=analysis["guidance"],
+                hash_sha256=analysis["hash_sha256"]
             )
 
         except Exception as e:
             print(f"[QR-INSPECTOR] Service error: {e}")
+            import traceback
+            traceback.print_exc()
             return QRInspectionResult(
                 success=False,
                 error=str(e),

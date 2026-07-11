@@ -472,6 +472,23 @@ export function ResultsPanel({ results, isScanning, onClear }: ResultsPanelProps
             )}
           </ul>
         </div>
+
+        {qr.guidance && (
+          <div className="result-block" style={{ marginTop: "12px" }}>
+            <h4 className="result-block-title">Security Guidance</h4>
+            <div className="result-action" style={{ 
+              whiteSpace: "pre-line", 
+              borderLeftColor: qr.risk_level === "HIGH" ? "#ff4d2e" : qr.risk_level === "MEDIUM" ? "#ffb22e" : "#31f58b",
+              background: "rgba(255, 255, 255, 0.02)",
+              padding: "12px 14px",
+              borderRadius: "8px",
+              fontSize: "0.76rem",
+              lineHeight: "1.4"
+            }}>
+              {qr.guidance}
+            </div>
+          </div>
+        )}
       </div>
       </div>
     );
