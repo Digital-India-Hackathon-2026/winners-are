@@ -153,21 +153,35 @@ async def execute_unified_scan(
             }
             
         # 3. Standard screenshot transaction layout verification
-        scan_response = await service.execute_full_scan(file_bytes)
-        
-        if not context.get("is_authenticated"):
-            scan_response.anonymous_session_id = context.get("uid")
-        scan_response.remaining_scans = context.get("remaining_scans", -1)
-        
-        response.headers["X-Anonymous-Session-ID"] = context.get("uid")
-        response.headers["X-Remaining-Scans"] = str(context.get("remaining_scans", -1))
-        
-        return {
-            "file_type": "screenshot",
-            "screenshot_result": scan_response.model_dump(),
-            "anonymous_session_id": context.get("uid"),
-            "remaining_scans": context.get("remaining_scans", -1)
-        }
+        try:
+            scan_response = await service.execute_full_scan(file_bytes)
+            
+            if not context.get("is_authenticated"):
+                scan_response.anonymous_session_id = context.get("uid")
+            scan_response.remaining_scans = context.get("remaining_scans", -1)
+            
+            response.headers["X-Anonymous-Session-ID"] = context.get("uid")
+            response.headers["X-Remaining-Scans"] = str(context.get("remaining_scans", -1))
+            
+            return {
+                "file_type": "screenshot",
+                "screenshot_result": scan_response.model_dump(),
+                "anonymous_session_id": context.get("uid"),
+                "remaining_scans": context.get("remaining_scans", -1)
+            }
+        except HTTPException as he:
+            if he.status_code == 422:
+                # Fallback: Treat as a general media/document threat scan
+                from backend.modules.document_scanner.service import get_document_scanner_service
+                doc_service = get_document_scanner_service()
+                res = await doc_service.scan(file_bytes, content_type or "image/png")
+                return {
+                    "file_type": "pdf", # Frontend renders document results under 'pdf' key
+                    "document_result": res.model_dump(),
+                    "anonymous_session_id": context.get("uid"),
+                    "remaining_scans": context.get("remaining_scans", -1)
+                }
+            raise he
     except HTTPException as he:
         raise he
     except Exception as e:
