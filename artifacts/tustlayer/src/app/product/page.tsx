@@ -10,6 +10,12 @@ export default function ProductPage() {
 
   const [messageText, setMessageText] = useState<string>("");
   const [activeTab, setActiveTab] = useState<"file" | "message">("file");
+  const [uploadedImage, setUploadedImage] = useState<string | null>(null);
+  const [selectedFile,  setSelectedFile]  = useState<File | null>(null);
+  const [uploadedName,  setUploadedName]  = useState<string>("");
+  const [isScanning,    setIsScanning]    = useState<boolean>(false);
+  const [scanResults,   setScanResults]   = useState<any>(null);
+  const [errorMsg,      setErrorMsg]      = useState<string | null>(null);
 
   const handleFileSelect = (file: File) => {
     const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/svg+xml", "application/pdf"];
