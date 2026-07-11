@@ -68,57 +68,33 @@ export default function ProductPage() {
     try {
       const formData = new FormData();
       if (selectedFile) {
-        // Direct-to-Storage upload to Supabase Storage to bypass Vercel 4.5MB API payload limits
-        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://eohswgvomkiuvijxklvl.supabase.co";
-        const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVvaHN3Z3ZvbWtpdXZpanhrbHZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyMzQ0MzYsImV4cCI6MjA5NjgxMDQzNn0.SXJO_jhF9JlGxYrEbgDQLUYo426BF2yLQZk-Klxvmaw";
-        
-        const uniquePath = `uploads/${Date.now()}-${selectedFile.name.replace(/[^a-zA-Z0-9.-]/g, "_")}`;
-        const uploadUrl = `${supabaseUrl}/storage/v1/object/scans/${uniquePath}`;
-        
-        const uploadResponse = await fetch(uploadUrl, {
-          method: "POST",
-          headers: {
-            "Authorization": `Bearer ${supabaseKey}`,
-            "apikey": supabaseKey,
-            "Content-Type": selectedFile.type,
-            "x-upsert": "true"
-          },
-          body: selectedFile
-        });
-        
-        if (!uploadResponse.ok) {
-          const errText = await uploadResponse.text();
-          let parsedError = "";
-          try {
-            const errJson = JSON.parse(errText);
-            parsedError = errJson.message || errJson.error || errText;
-          } catch {
-            parsedError = errText;
-          }
-          throw new Error(`Upload failed: ${parsedError}`);
-        }
-        
-        const publicUrl = `${supabaseUrl}/storage/v1/object/public/scans/${uniquePath}`;
-        formData.append("file_url", publicUrl);
+        // Direct multipart upload — no storage intermediary needed
+        formData.append("file", selectedFile, selectedFile.name);
       } else {
-        // Fallback for svg/demo loading
+        // Demo/SVG fallback: convert data URL → blob
         const blob = await (await fetch(uploadedImage!)).blob();
         formData.append("file", blob, uploadedName || "screenshot.png");
       }
 
       const response = await fetch("/api/v1/scan/unified", { method: "POST", body: formData });
       if (response.status === 413) {
-        throw new Error("File exceeds upload limit.");
+        throw new Error("File exceeds upload limit (max 4.5 MB via API). Try a smaller image.");
       }
-      if (!response.ok) throw new Error(`HTTP Error ${response.status}`);
+      if (!response.ok) {
+        const errBody = await response.text();
+        let detail = `HTTP ${response.status}`;
+        try { detail = JSON.parse(errBody).detail || detail; } catch {}
+        throw new Error(detail);
+      }
       setScanResults(await response.json());
     } catch (err: any) {
       console.error("Forensic scan failed:", err);
-      setErrorMsg(err.message || "Forensic scan failed");
+      setErrorMsg(err.message || "Forensic scan failed. Please try again.");
     } finally {
       setIsScanning(false);
     }
   };
+
 
   const handleLoadDemo = () => {
     setSelectedFile(null);
