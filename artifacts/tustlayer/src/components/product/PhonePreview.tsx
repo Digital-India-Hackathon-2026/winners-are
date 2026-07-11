@@ -420,8 +420,6 @@ export function PhonePreview({
             )}
           </div>
         </div>
-      </div>          </div>
-        </div>
       </div>
 
       {errorMsg && (
