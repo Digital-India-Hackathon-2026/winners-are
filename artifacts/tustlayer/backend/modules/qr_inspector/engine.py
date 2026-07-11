@@ -161,6 +161,7 @@ class QRInspectorEngine:
             import httpx
             suspicious_uri = True
             risk_signals.append(f"QR contains URL (not UPI): {qr_text[:80]}")
+            final_url = qr_text
             
             try:
                 async with httpx.AsyncClient(timeout=4.0, follow_redirects=True) as client:
@@ -186,6 +187,21 @@ class QRInspectorEngine:
             except Exception as redirect_err:
                 print(f"[QR-INSPECTOR] Failed to resolve redirects: {redirect_err}")
                 risk_signals.append(f"⚠ Failed to verify URL security destination.")
+
+            # Call Google Safe Browsing
+            from backend.integrations.safe_browsing_client import check_urls
+            google_safe_browsing_threat = False
+            try:
+                urls_to_check = list(set([qr_text, final_url]))
+                sb_result = await check_urls(urls_to_check)
+                for checked_url, res_data in sb_result.items():
+                    if res_data.get("is_threat"):
+                        google_safe_browsing_threat = True
+                        threat_type = res_data.get("threat_type", "SUSPICIOUS")
+                        risk_signals.append(f"Flagged by Google Safe Browsing as {threat_type}")
+                        break
+            except Exception as e:
+                print(f"[QR-INSPECTOR] Google Safe Browsing check failed: {e}")
         else:
             risk_signals.append(f"Non-UPI QR content: {qr_text[:60]}")
 
@@ -198,4 +214,5 @@ class QRInspectorEngine:
             "suspicious_uri": suspicious_uri,
             "risk_signals": risk_signals,
             "vpa_handle_valid": not unknown_vpa if is_upi else False,
+            "google_safe_browsing_threat": locals().get("google_safe_browsing_threat", False),
         }

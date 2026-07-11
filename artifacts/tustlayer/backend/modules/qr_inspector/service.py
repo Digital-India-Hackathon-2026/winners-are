@@ -49,7 +49,7 @@ class QRInspectorService:
             # Determine risk level
             # Determine risk level
             has_untrusted_domain = any("⚠ Untrusted" in sig or "⚠ Failed" in sig for sig in all_signals)
-            critical_flags = analysis["foreign_currency"] or (analysis["unknown_vpa"] and not analysis["is_upi"]) or has_untrusted_domain
+            critical_flags = analysis["foreign_currency"] or (analysis["unknown_vpa"] and not analysis["is_upi"]) or has_untrusted_domain or analysis.get("google_safe_browsing_threat", False)
             medium_flags = analysis["amount_hardcoded"] or analysis["suspicious_uri"] or analysis["unknown_vpa"]
 
             if critical_flags or multiple_qr:

@@ -54,9 +54,9 @@ class DocumentScannerService:
 
             # 2. Run Heuristic Engines
             if is_pdf:
-                raw = self.engine.analyze_pdf(file_bytes)
+                raw = await self.engine.analyze_pdf(file_bytes)
             else:
-                raw = self.engine.analyze_image(file_bytes)
+                raw = await self.engine.analyze_image(file_bytes)
 
             risk_signals = list(raw.get("steganography_signals", []))
             if nsfw_detected:

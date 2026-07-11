@@ -115,7 +115,7 @@ def _is_official_domain(domain: str) -> bool:
     return False
 
 
-def _analyze_url(url: str) -> Dict:
+async def _analyze_url(url: str) -> Dict:
     """
     Deep analysis of a single URL. Returns risk classification with reasons.
     """
@@ -125,74 +125,92 @@ def _analyze_url(url: str) -> Dict:
     reasons = []
     risk = "SAFE"
 
-    # 1. Skip official domains immediately
-    if _is_official_domain(domain):
-        return {"url": url, "risk": "SAFE", "reasons": ["Official/known domain"]}
-
-    # 2. URL shorteners — always suspicious in financial context
-    if domain in URL_SHORTENERS or any(domain.endswith(f".{s}") for s in URL_SHORTENERS):
-        reasons.append(f"URL shortener ({domain}) — hides real destination")
-        risk = "HIGH"
-
-    # 3. Suspicious TLD
-    if tld in SUSPICIOUS_TLDS:
-        reasons.append(f"Suspicious TLD '{tld}' commonly used in phishing")
-        risk = "HIGH"
-
-    # 4. Brand impersonation — domain contains a bank/payment brand but isn't official
-    for brand in INDIAN_BRAND_KEYWORDS:
-        if brand in domain and not _is_official_domain(domain):
-            reasons.append(f"Domain contains brand '{brand}' but is not an official domain")
+    # 1. Skip official domains for normal checks but still run safe browsing
+    is_official = _is_official_domain(domain)
+    if is_official:
+        reasons.append("Official/known domain")
+        risk = "SAFE"
+    else:
+        # 2. URL shorteners — always suspicious in financial context
+        if domain in URL_SHORTENERS or any(domain.endswith(f".{s}") for s in URL_SHORTENERS):
+            reasons.append(f"URL shortener ({domain}) — hides real destination")
             risk = "HIGH"
-            break
 
-    # 5. Phishing path/subdomain keywords
-    for pattern in PHISHING_PATH_PATTERNS:
-        if re.search(pattern, lower):
-            reasons.append(f"Phishing keyword pattern detected in URL")
+        # 3. Suspicious TLD
+        if tld in SUSPICIOUS_TLDS:
+            reasons.append(f"Suspicious TLD '{tld}' commonly used in phishing")
             risk = "HIGH"
-            break
 
-    # 6. Raw IP address
-    if re.match(r'https?://\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}', lower):
-        reasons.append("URL uses raw IP address instead of domain name")
-        risk = "HIGH"
+        # 4. Brand impersonation — domain contains a bank/payment brand but isn't official
+        for brand in INDIAN_BRAND_KEYWORDS:
+            if brand in domain and not _is_official_domain(domain):
+                reasons.append(f"Domain contains brand '{brand}' but is not an official domain")
+                risk = "HIGH"
+                break
 
-    # 7. Excessive subdomains (more than 3 dots in domain)
-    if domain.count(".") >= 3:
-        reasons.append(f"Excessive subdomains in domain ({domain})")
-        if risk != "HIGH":
-            risk = "MEDIUM"
+        # 5. Phishing path/subdomain keywords
+        for pattern in PHISHING_PATH_PATTERNS:
+            if re.search(pattern, lower):
+                reasons.append(f"Phishing keyword pattern detected in URL")
+                risk = "HIGH"
+                break
 
-    # 8. Homoglyph / typosquatting patterns
-    typo_patterns = [
-        (r'sbl\.', 'sbi'), (r'hdtc', 'hdfc'), (r'1cici', 'icici'),
-        (r'ax1s', 'axis'), (r'paytrn', 'paytm'), (r'ph0nepe', 'phonepe'),
-        (r'g00gle', 'google'), (r'amaz0n', 'amazon'),
-    ]
-    for pattern, brand in typo_patterns:
-        if re.search(pattern, domain):
-            reasons.append(f"Possible typosquatting of '{brand}'")
+        # 6. Raw IP address
+        if re.match(r'https?://\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}', lower):
+            reasons.append("URL uses raw IP address instead of domain name")
             risk = "HIGH"
-            break
+
+        # 7. Excessive subdomains (more than 3 dots in domain)
+        if domain.count(".") >= 3:
+            reasons.append(f"Excessive subdomains in domain ({domain})")
+            if risk != "HIGH":
+                risk = "MEDIUM"
+
+        # 8. Homoglyph / typosquatting patterns
+        typo_patterns = [
+            (r'sbl\.', 'sbi'), (r'hdtc', 'hdfc'), (r'1cici', 'icici'),
+            (r'ax1s', 'axis'), (r'paytrn', 'paytm'), (r'ph0nepe', 'phonepe'),
+            (r'g00gle', 'google'), (r'amaz0n', 'amazon'),
+        ]
+        for pattern, brand in typo_patterns:
+            if re.search(pattern, domain):
+                reasons.append(f"Possible typosquatting of '{brand}'")
+                risk = "HIGH"
+                break
 
     # 9. If no signals found, mark as SAFE
     if not reasons:
         reasons.append("No suspicious indicators detected")
 
+    # 10. Call Google Safe Browsing API v4
+    from backend.integrations.safe_browsing_client import check_urls
+    try:
+        sb_result = await check_urls([url])
+        url_res = sb_result.get(url, {})
+        is_threat = url_res.get("is_threat")
+        threat_type = url_res.get("threat_type")
+        if is_threat:
+            risk = "HIGH"
+            if "No suspicious indicators detected" in reasons:
+                reasons.remove("No suspicious indicators detected")
+            reasons.append(f"Flagged by Google Safe Browsing as {threat_type}")
+    except Exception as e:
+        print(f"[DOC-SCANNER] Safe Browsing check failed for {url}: {e}")
+
     return {"url": url, "risk": risk, "reasons": reasons}
 
 
-def _is_suspicious_url(url: str) -> bool:
+async def _is_suspicious_url(url: str) -> bool:
     """Quick check — returns True if URL has any risk signal."""
-    result = _analyze_url(url)
+    result = await _analyze_url(url)
     return result["risk"] in ("HIGH", "MEDIUM")
 
 
 class DocumentScannerEngine:
 
-    def analyze_image(self, image_bytes: bytes) -> dict:
+    async def analyze_image(self, image_bytes: bytes) -> dict:
         """Analyze a raster image for steganography and embedded URLs."""
+        import asyncio
         signals = []
         urls = []
         stego_suspected = False
@@ -245,7 +263,7 @@ class DocumentScannerEngine:
         except Exception:
             pass
 
-        url_analysis = [_analyze_url(u) for u in urls]
+        url_analysis = await asyncio.gather(*[_analyze_url(u) for u in urls[:20]])
         suspicious = [a["url"] for a in url_analysis if a["risk"] in ("HIGH", "MEDIUM")]
         return {
             "document_type": "image",
@@ -260,8 +278,9 @@ class DocumentScannerEngine:
             "pdf_auto_action_found": False,
         }
 
-    def analyze_pdf(self, pdf_bytes: bytes) -> dict:
+    async def analyze_pdf(self, pdf_bytes: bytes) -> dict:
         """Analyze a PDF for embedded threats."""
+        import asyncio
         signals = []
         urls = []
         js_found = False
@@ -323,7 +342,7 @@ class DocumentScannerEngine:
         if embedded_files:
             signals.append(f"PDF contains {embedded_count} embedded file(s)")
 
-        url_analysis = [_analyze_url(u) for u in urls[:20]]
+        url_analysis = await asyncio.gather(*[_analyze_url(u) for u in urls[:20]])
         suspicious = [a["url"] for a in url_analysis if a["risk"] in ("HIGH", "MEDIUM")]
         return {
             "document_type": "pdf",

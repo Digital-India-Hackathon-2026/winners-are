@@ -26,7 +26,8 @@ class Settings(BaseSettings):
     # External API keys (new in v2.0)
     RAZORPAY_KEY_ID: str = os.getenv("RAZORPAY_KEY_ID") or ""
     RAZORPAY_KEY_SECRET: str = os.getenv("RAZORPAY_KEY_SECRET") or ""
-    GOOGLE_SAFE_BROWSING_KEY: str = os.getenv("GOOGLE_SAFE_BROWSING_KEY") or ""
+    GOOGLE_SAFE_BROWSING_KEY: str = os.getenv("GOOGLE_SAFE_BROWSING_KEY") or os.getenv("GOOGLE_SAFE_BROWSING_API_KEY") or ""
+    GOOGLE_SAFE_BROWSING_API_KEY: str = os.getenv("GOOGLE_SAFE_BROWSING_API_KEY") or os.getenv("GOOGLE_SAFE_BROWSING_KEY") or ""
     VIRUSTOTAL_API_KEY: str = os.getenv("VIRUSTOTAL_API_KEY") or ""
 
     GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY") or ""
