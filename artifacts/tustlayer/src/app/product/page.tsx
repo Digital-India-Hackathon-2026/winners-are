@@ -18,9 +18,16 @@ export default function ProductPage() {
   const [errorMsg,      setErrorMsg]      = useState<string | null>(null);
 
   const handleFileSelect = (file: File) => {
-    const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/svg+xml", "application/pdf"];
-    if (!allowedTypes.includes(file.type)) {
-      setErrorMsg("Unsupported format. Please upload a receipt image (JPEG, PNG, WEBP, SVG) or a PDF.");
+    const ext = file.name.split('.').pop()?.toLowerCase();
+    const isDoc = ["doc", "docx", "docm"].includes(ext || "");
+    const allowedTypes = [
+      "image/jpeg", "image/png", "image/webp", "image/svg+xml", "application/pdf",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      "application/vnd.ms-word.document.macroEnabled.12",
+      "application/msword"
+    ];
+    if (!allowedTypes.includes(file.type) && !isDoc) {
+      setErrorMsg("Unsupported format. Please upload a receipt image, PDF, or Word document.");
       setSelectedFile(null);
       setUploadedImage(null);
       setUploadedName("");
@@ -44,6 +51,8 @@ export default function ProductPage() {
     
     if (file.type === "application/pdf") {
       setUploadedImage("pdf-placeholder");
+    } else if (file.type.includes("word") || isDoc) {
+      setUploadedImage("doc-placeholder");
     } else {
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -73,8 +82,21 @@ export default function ProductPage() {
       if (selectedFile) {
         formData.append("file", selectedFile, selectedFile.name);
       } else {
-        const blob = await (await fetch(uploadedImage!)).blob();
-        formData.append("file", blob, uploadedName || "screenshot.png");
+        if (uploadedImage!.startsWith("data:")) {
+          const parts = uploadedImage!.split(',');
+          const mime = parts[0].match(/:(.*?);/)?.[1] || 'image/png';
+          const bstr = atob(parts[1]);
+          let n = bstr.length;
+          const u8arr = new Uint8Array(n);
+          while (n--) {
+            u8arr[n] = bstr.charCodeAt(n);
+          }
+          const blob = new Blob([u8arr], { type: mime });
+          formData.append("file", blob, uploadedName || "screenshot.png");
+        } else {
+          const blob = await (await fetch(uploadedImage!)).blob();
+          formData.append("file", blob, uploadedName || "screenshot.png");
+        }
       }
 
       const response = await fetch("/api/v1/scan/unified", { method: "POST", body: formData });

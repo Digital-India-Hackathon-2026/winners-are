@@ -49,15 +49,23 @@ export function PhonePreview({
     e.preventDefault();
     setIsDragging(false);
     const file = e.dataTransfer.files?.[0];
-    if (file && (file.type.startsWith("image/") || file.type === "application/pdf")) {
-      onFileSelect(file);
+    if (file) {
+      const ext = file.name.split('.').pop()?.toLowerCase();
+      const isDoc = ["doc", "docx", "docm"].includes(ext || "");
+      if (file.type.startsWith("image/") || file.type === "application/pdf" || file.type.includes("word") || isDoc) {
+        onFileSelect(file);
+      }
     }
   };
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file && (file.type.startsWith("image/") || file.type === "application/pdf")) {
-      onFileSelect(file);
+    if (file) {
+      const ext = file.name.split('.').pop()?.toLowerCase();
+      const isDoc = ["doc", "docx", "docm"].includes(ext || "");
+      if (file.type.startsWith("image/") || file.type === "application/pdf" || file.type.includes("word") || isDoc) {
+        onFileSelect(file);
+      }
     }
   };
 
@@ -121,7 +129,7 @@ export function PhonePreview({
                 /* Active Upload / Preview State inside the Phone screen */
                 <div style={{ position: "relative", width: "100%", flexGrow: 1, display: "flex", flexDirection: "column", padding: "10px 14px 10px", minHeight: 0 }}>
                   <div style={{ position: "relative", flexGrow: 1, height: 0, minHeight: 0, overflow: "hidden", borderRadius: "12px", background: "rgba(0,0,0,0.35)", border: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    {uploadedImage === "pdf-placeholder" ? (
+                    {uploadedImage === "pdf-placeholder" || uploadedImage === "doc-placeholder" ? (
                       <div style={{
                         display: "flex",
                         flexDirection: "column",
@@ -130,12 +138,12 @@ export function PhonePreview({
                         padding: "20px",
                         textAlign: "center"
                       }}>
-                        <span style={{ fontSize: "3rem" }}>📄</span>
+                        <span style={{ fontSize: "3rem" }}>{uploadedImage === "pdf-placeholder" ? "📄" : "📝"}</span>
                         <span style={{ fontSize: "0.8rem", color: "var(--foreground-muted)", marginTop: "12px", fontWeight: "bold", wordBreak: "break-all" }}>
                           {uploadedName}
                         </span>
                         <span style={{ fontSize: "0.64rem", color: "var(--foreground-dim)", marginTop: "4px" }}>
-                          PDF Security Forensic Ready
+                          {uploadedImage === "pdf-placeholder" ? "PDF Security Forensic Ready" : "Document Security Forensic Ready"}
                         </span>
                       </div>
                     ) : (
@@ -243,7 +251,7 @@ export function PhonePreview({
                     type="file" 
                     ref={fileInputRef} 
                     onChange={handleFileChange} 
-                    accept="image/*,application/pdf" 
+                    accept="image/*,application/pdf,.doc,.docx,.docm" 
                     style={{ display: "none" }} 
                   />
                   

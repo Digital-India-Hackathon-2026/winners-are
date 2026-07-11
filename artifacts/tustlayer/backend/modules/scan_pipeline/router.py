@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, File, UploadFile, HTTPException, status, Response, Form
 from fastapi.responses import StreamingResponse
+from pydantic import BaseModel
 from typing import Optional
 import httpx
 from backend.modules.scan_pipeline.schemas import FinalScanResponse
@@ -131,7 +132,13 @@ async def execute_unified_scan(
                 file_bytes = download_resp.content
                 filename = file_url.split("/")[-1].split("?")[0]
                 content_type = download_resp.headers.get("content-type", "")
-                is_pdf = "pdf" in content_type.lower() or filename.lower().endswith(".pdf") or file_bytes[:4] == b"%PDF"
+                is_document = (
+                    "pdf" in content_type.lower() or 
+                    "word" in content_type.lower() or 
+                    "officedocument" in content_type.lower() or 
+                    filename.lower().endswith((".pdf", ".doc", ".docx", ".docm")) or 
+                    file_bytes[:4] == b"%PDF"
+                )
         else:
             if not file:
                 raise HTTPException(status_code=400, detail="Either file or file_url must be provided.")
@@ -140,14 +147,20 @@ async def execute_unified_scan(
             
             # Read a small chunk to check PDF magic bytes safely
             header_chunk = await file.read(4)
-            is_pdf = "pdf" in content_type.lower() or filename.lower().endswith(".pdf") or header_chunk == b"%PDF"
+            is_document = (
+                "pdf" in content_type.lower() or 
+                "word" in content_type.lower() or 
+                "officedocument" in content_type.lower() or 
+                filename.lower().endswith((".pdf", ".doc", ".docx", ".docm")) or 
+                header_chunk == b"%PDF"
+            )
             
             # Reset pointer for full read
             await file.seek(0)
             file_bytes = await file.read()
         
-        # 1. PDF Document routing
-        if is_pdf:
+        # 1. Document routing (PDF, Word docs)
+        if is_document:
             from backend.modules.document_scanner.service import get_document_scanner_service
             doc_service = get_document_scanner_service()
             res = await doc_service.scan(file_bytes, content_type)
