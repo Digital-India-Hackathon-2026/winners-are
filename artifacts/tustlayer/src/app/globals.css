@@ -396,7 +396,7 @@ body {
 .phone-shell {
   position: relative;
   height: clamp(460px, 70vh, 640px);
-  aspect-ratio: 9 / 16;
+  aspect-ratio: 9 / 19.4;
   border: 1px solid rgba(255, 248, 238, 0.16);
   border-radius: var(--radius-phone);
   background:
