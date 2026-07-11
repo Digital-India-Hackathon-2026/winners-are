@@ -20,6 +20,7 @@ export function Navigation() {
         TrustLayer AI
       </Link>
       <div className="nav-links">
+        <Link href="/#whatsapp-scan">WhatsApp Scan</Link>
         <Link href="/#scam-reality">The Problem</Link>
         <Link href="/#forensic-scan">How It Works</Link>
         <Link href="/product" className="nav-tool-link">Unified Scanner</Link>

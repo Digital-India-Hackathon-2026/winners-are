@@ -1,5 +1,6 @@
 "use client";
 import { HeroSection } from "@/components/landing/HeroSection";
+import { WhatsappScanSection } from "@/components/landing/WhatsappScanSection";
 import { ScamRealitySection } from "@/components/landing/ScamRealitySection";
 import { ForensicScanSection } from "@/components/landing/ForensicScanSection";
 import { VerdictSection } from "@/components/landing/VerdictSection";
@@ -14,6 +15,7 @@ export default function Home() {
   return (
     <main>
       <HeroSection />
+      <WhatsappScanSection />
       <ScamRealitySection />
       <ForensicScanSection />
       <VerdictSection />
