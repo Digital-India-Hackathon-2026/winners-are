@@ -62,6 +62,34 @@ graph TD
 
 ---
 
+## 🩺 Reliability & Deployment Integrity
+
+Three fixes went in after an internal judge-mode audit surfaced real gaps — documenting
+them here on purpose, not hiding them:
+
+* **One canonical deployment, verifiable at runtime.** Earlier, this repo had multiple
+  overlapping entrypoints (a root-level `backend/main.py` stub from an early prototype,
+  a duplicate `whatsapp/main.py`), and the live Twilio-facing deployment had drifted out
+  of sync with `main` — a test image produced a response that didn't match any code in
+  the repo. The canonical path is now `artifacts/tustlayer/` → `api/index.py` →
+  `backend/main.py`, everything else deprecated (`HTTP 410`), and `GET /api/v1/version`
+  reports the exact git commit/branch/deploy time currently live, so this can be
+  verified in one `curl` instead of by inspection.
+* **AI reasoning is grounding-checked, not trusted blindly.** The LLM-generated
+  "why" bullets in a Trust Score result are checked for real overlap with the actual
+  OCR-extracted text and fields before being shown to a user. Any bullet that isn't
+  traceable to something the pipeline actually found is discarded server-side, not
+  surfaced — a "verifiable trust score" product can't afford an occasional hallucinated
+  explanation, even a rare one.
+* **Out-of-scope images get an honest answer, not a guess.** The scanner is built to
+  verify *completed* payment receipts. An image with too little extractable payment
+  data and no confirmed payment status (a pre-payment screen, an unrelated photo, a
+  mockup) now short-circuits to a clear "this doesn't look like a payment receipt"
+  message — on the web app and the WhatsApp bot — instead of running full AI reasoning
+  on insufficient data.
+
+---
+
 ## 🚀 Quick Start (Local Run)
 
 ### Prerequisites
@@ -79,9 +107,20 @@ graph TD
 # Install python dependencies
 pip install -r requirements.txt
 
-# Run FastAPI app
-python -m uvicorn backend.main:app --port 8000
+# Run FastAPI app — NOTE: the real backend lives under artifacts/tustlayer.
+# Do not run backend.main from the repo root — that path is a deprecated
+# early-prototype stub (returns HTTP 410) and is not the scanning pipeline.
+cd artifacts/tustlayer
+python -m uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload
 ```
+
+Verify you're running the right thing:
+```bash
+curl http://localhost:8000/api/v1/version
+# { "git_commit": "...", "git_branch": "...", "deployed_at": "..." }
+```
+Check this against `git log -1 --oneline` before every demo — see
+[Reliability & Deployment Integrity](#-reliability--deployment-integrity) below.
 
 ### 2. Start the Next.js Frontend
 ```bash
@@ -97,6 +136,34 @@ Open [http://localhost:3000/product](http://localhost:3000/product) to scan!
 
 ## 🧪 Demo Mode
 Click the **"Load Demo Screenshot"** option inside the dashboard to synthesize an SVG PhonePe proof client-side and verify the active diagnostics scan immediately.
+
+---
+
+## 🗺️ Known Limitations & Roadmap
+
+Built in a hackathon window, so scoping this honestly:
+
+* **Test coverage is thin.** The deterministic scoring engine (`trust_score/engine.py`)
+  is the most rule-heavy, highest-stakes code in the project and doesn't yet have a
+  golden-case regression suite — that's the first thing we'd add with more time.
+* **Fraud-template matching is seeded with placeholder data**, not a real scam-image
+  database. It works structurally (perceptual hashing + Hamming distance) but needs a
+  real, growing dataset — ideally sourced via a bank/NPCI partnership rather than
+  self-collected, since India's actual fraud-report data (CFCFRMS) isn't openly
+  accessible to non-regulated entities.
+* **Per-scan cost is demo-scale, not India-scale.** A single screenshot can trigger
+  ~8 parallel LLM calls across two providers. At real WhatsApp volume this needs
+  consolidating into fewer, structured multimodal calls, plus caching on repeated
+  VPA/URL lookups.
+* **Auth is not production-grade.** Firebase token verification is currently a
+  placeholder, and Twilio webhook signature validation is skippable when unset —
+  fine for a demo, not for handling real financial data.
+* **External verification is inherently a proxy, not ground truth.** NPCI doesn't
+  expose real-time UPI transaction verification to non-bank entities — nothing here
+  changes that regulatory ceiling. Razorpay's VPA lookup (what we use) is one of the
+  few third-party-accessible signals available today; true ground-truth verification
+  would require a licensed bank/PSP partnership, which is the real unlock for this
+  product, not just more engineering time.
 
 ---
 
