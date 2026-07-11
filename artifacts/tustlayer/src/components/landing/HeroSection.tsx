@@ -8,6 +8,7 @@ export function HeroSection() {
       <div className="hero-vignette" />
       <div className="hero-grain" />
       <div className="hero-grid" />
+      <div className="hero-scanline" />
       
       <div className="tl-section-inner">
         <div className="hero-copy">

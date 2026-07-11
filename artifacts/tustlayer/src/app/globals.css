@@ -2229,3 +2229,95 @@ body {
   font-weight: 600;
 }
 
+/* ═══════════════════════════════════════════════════
+   PREMIUM INTERACTIONS & ANIMATIONS
+   ═══════════════════════════════════════════════════ */
+
+/* Hero grid pulse */
+.hero-grid {
+  animation: grid-pulse 8s ease-in-out infinite;
+}
+
+@keyframes grid-pulse {
+  0%, 100% { opacity: 0.08; }
+  50% { opacity: 0.14; }
+}
+
+/* Scanline Radar Sweep */
+.hero-scanline {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 6px;
+  background: linear-gradient(to bottom, transparent, rgba(52, 230, 255, 0.08) 50%, transparent);
+  box-shadow: 0 0 16px rgba(52, 230, 255, 0.06);
+  opacity: 0.75;
+  pointer-events: none;
+  animation: scanline-sweep 7s linear infinite;
+  z-index: 1;
+}
+
+@keyframes scanline-sweep {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(100vh);
+  }
+}
+
+/* Typewriter Cursor */
+.typewriter-cursor {
+  display: inline-block;
+  margin-left: 2px;
+  animation: cursor-blink 0.8s infinite;
+  color: var(--signal);
+  font-weight: 900;
+}
+
+@keyframes cursor-blink {
+  0%, 100% { opacity: 0; }
+  50% { opacity: 1; }
+}
+
+/* Scrolled Nav styling */
+.site-nav {
+  transition: padding 0.35s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.35s ease, border-color 0.35s ease;
+  border-bottom: 1px solid transparent;
+}
+
+.site-nav.scrolled {
+  padding-top: 12px;
+  padding-bottom: 12px;
+  background-color: rgba(5, 5, 5, 0.95) !important;
+  border-bottom-color: rgba(255, 248, 238, 0.06) !important;
+}
+
+.site-nav.scrolled .scroll-progress-bar {
+  box-shadow: 0 1px 12px var(--signal);
+}
+
+/* Exhibit tag hover glow */
+.scam-card:hover .exhibit-tag {
+  color: var(--foreground) !important;
+  opacity: 1 !important;
+  text-shadow: 0 0 8px rgba(255, 255, 255, 0.2);
+}
+
+/* Accessibility / Reduced Motion support */
+@media (prefers-reduced-motion: reduce) {
+  .hero-scanline,
+  .hero-grid,
+  .typewriter-cursor {
+    animation: none !important;
+  }
+  .hero-scanline {
+    display: none;
+  }
+  .typewriter-cursor {
+    display: none;
+  }
+}
+
+

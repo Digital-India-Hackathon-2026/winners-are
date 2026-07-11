@@ -1,6 +1,71 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, useInView } from "framer-motion";
+import { useRef, useEffect, useState } from "react";
+
+function CountUp({ value, suffix = "" }: { value: number; suffix?: string }) {
+  const [count, setCount] = useState(0);
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true, margin: "-50px" });
+
+  useEffect(() => {
+    if (!isInView) return;
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (prefersReducedMotion) {
+      setCount(value);
+      return;
+    }
+
+    let start = 0;
+    const end = value;
+    const duration = 1200; // ms
+    const increment = end / (duration / 16);
+    const timer = setInterval(() => {
+      start += increment;
+      if (start >= end) {
+        setCount(end);
+        clearInterval(timer);
+      } else {
+        setCount(Math.floor(start));
+      }
+    }, 16);
+    return () => clearInterval(timer);
+  }, [isInView, value]);
+
+  return <span ref={ref}>{count}{suffix}</span>;
+}
+
+function CountUpDecimal({ value, decimals = 1, suffix = "" }: { value: number; decimals?: number; suffix?: string }) {
+  const [count, setCount] = useState(0);
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true, margin: "-50px" });
+
+  useEffect(() => {
+    if (!isInView) return;
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (prefersReducedMotion) {
+      setCount(value);
+      return;
+    }
+
+    let start = 0;
+    const end = value;
+    const duration = 1200; // ms
+    const increment = end / (duration / 16);
+    const timer = setInterval(() => {
+      start += increment;
+      if (start >= end) {
+        setCount(end);
+        clearInterval(timer);
+      } else {
+        setCount(Number(start.toFixed(decimals)));
+      }
+    }, 16);
+    return () => clearInterval(timer);
+  }, [isInView, value, decimals]);
+
+  return <span ref={ref}>{count.toFixed(decimals)}{suffix}</span>;
+}
 
 const evidenceCards = [
   {
@@ -47,7 +112,7 @@ const evidenceCards = [
           transition={{ repeat: Infinity, duration: 2.5 }}
           style={{ color: "var(--cyan)", fontSize: "1.8rem", fontWeight: 950 }}
         >
-          47%
+          <CountUp value={47} suffix="%" />
         </motion.strong>
         <span style={{ fontSize: "0.72rem", color: "var(--foreground-muted)", marginLeft: "8px" }}>
           of retail UPI fraud cases involve physical sticker QR swapping
@@ -70,7 +135,7 @@ const evidenceCards = [
           transition={{ repeat: Infinity, duration: 1.8 }}
           style={{ color: "var(--signal)", fontSize: "1.8rem", fontWeight: 950 }}
         >
-          3.2 Lakh
+          <CountUpDecimal value={3.2} decimals={1} suffix=" Lakh" />
         </motion.strong>
         <span style={{ fontSize: "0.72rem", color: "var(--foreground-muted)", marginLeft: "8px" }}>
           reported fake-wallet instances recorded annually across India
@@ -126,13 +191,22 @@ export function ScamRealitySection() {
           {evidenceCards.map((card, idx) => (
             <motion.div
               key={card.id}
-              className="scam-card reveal-up"
+              className="scam-card"
+              initial={{ opacity: 0, y: 35 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-40px" }}
               whileHover={{
-                y: -6,
-                borderColor: card.borderColor,
-                boxShadow: `0 18px 45px rgba(0,0,0,0.4), 0 0 25px ${card.badgeColor}`,
+                y: -8,
+                scale: 1.02,
+                borderColor: "var(--ember)",
+                boxShadow: "0 22px 52px rgba(0,0,0,0.48), 0 0 25px var(--ember-glow)",
               }}
-              transition={{ type: "tween", ease: "easeOut", duration: 0.25 }}
+              transition={{
+                layout: { duration: 0.2 },
+                default: { type: "spring", stiffness: 100, damping: 15 },
+                opacity: { duration: 0.5, delay: idx * 0.12 },
+                y: { duration: 0.5, delay: idx * 0.12 }
+              }}
               style={{
                 position: "relative",
                 display: "flex",
@@ -142,6 +216,7 @@ export function ScamRealitySection() {
             >
               {/* Evidence header / Tag */}
               <div
+                className="scam-card-header"
                 style={{
                   display: "flex",
                   justifyContent: "space-between",
@@ -155,7 +230,9 @@ export function ScamRealitySection() {
                   borderBottom: "1px solid rgba(255,248,238,0.04)"
                 }}
               >
-                <span>{card.exhibit}</span>
+                <span className="exhibit-tag" style={{ transition: "color 0.25s ease, opacity 0.25s ease" }}>
+                  {card.exhibit}
+                </span>
                 <span
                   style={{
                     color: card.status === "EXPLOITED" || card.status === "HIGH RISK" ? "var(--ember)" : "var(--cyan)",

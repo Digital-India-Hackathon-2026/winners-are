@@ -3,18 +3,43 @@
 import Link from "next/link";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
+import { motion, useScroll } from "framer-motion";
 
 export function Navigation() {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const { scrollYProgress } = useScroll();
 
   // Avoid hydration mismatch
   useEffect(() => {
     setMounted(true);
+    
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   return (
-    <nav className="site-nav">
+    <nav className={`site-nav ${scrolled ? "scrolled" : ""}`}>
+      {/* Page Scroll Progress Indicator */}
+      <motion.div
+        className="scroll-progress-bar"
+        style={{
+          position: "absolute",
+          bottom: 0,
+          left: 0,
+          right: 0,
+          height: "2px",
+          background: "var(--signal)",
+          boxShadow: "0 1px 6px var(--signal)",
+          scaleX: scrollYProgress,
+          transformOrigin: "0%",
+          zIndex: 105
+        }}
+      />
       <Link href="/" className="nav-brand">
         <span className="nav-shield" aria-hidden="true" />
         TrustLayer AI

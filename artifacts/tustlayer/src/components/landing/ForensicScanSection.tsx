@@ -1,13 +1,48 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useEffect, useState, useRef } from "react";
+import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
+
+function FastTypewriter({ text }: { text: string }) {
+  const [disp, setDisp] = useState("");
+
+  useEffect(() => {
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (prefersReducedMotion) {
+      setDisp(text);
+      return;
+    }
+
+    setDisp("");
+    let i = 0;
+    const interval = setInterval(() => {
+      if (i <= text.length) {
+        setDisp(text.slice(0, i));
+        i++;
+      } else {
+        clearInterval(interval);
+      }
+    }, 20);
+    return () => clearInterval(interval);
+  }, [text]);
+
+  return <span>{disp}</span>;
+}
 
 export function ForensicScanSection() {
   const [activePhase, setActivePhase] = useState(1);
   const [liveTrustScore, setLiveTrustScore] = useState(100);
+  
+  const containerRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start end", "end start"]
+  });
 
-  // Auto-cycle the active phase every 3.8 seconds
+  // Map scroll progress through the section to a sequential timeline progress line (desktop)
+  const progressWidth = useTransform(scrollYProgress, [0.2, 0.6], ["0%", "100%"]);
+
+  // Auto-cycle the active phase every 4 seconds
   useEffect(() => {
     const timer = setInterval(() => {
       setActivePhase((prev) => (prev % 3) + 1);
@@ -100,7 +135,7 @@ export function ForensicScanSection() {
 
 
   return (
-    <section id="forensic-scan" className="tl-section forensic-section" style={{ position: "relative" }}>
+    <section ref={containerRef} id="forensic-scan" className="tl-section forensic-section" style={{ position: "relative" }}>
       <div className="tl-section-inner">
         <div className="forensic-header reveal-up">
           <span className="section-tag">The Solution</span>
@@ -123,6 +158,30 @@ export function ForensicScanSection() {
             display: "block"
           }}
         >
+          {/* Static gray track */}
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              borderRadius: "999px",
+              background: "rgba(255,248,238,0.06)"
+            }}
+          />
+          {/* Scroll progress connector line */}
+          <motion.div
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              height: "100%",
+              width: progressWidth,
+              background: "linear-gradient(90deg, var(--cyan) 0%, var(--signal) 50%, var(--ember) 100%)",
+              boxShadow: "0 0 8px rgba(219, 255, 74, 0.4)",
+              borderRadius: "999px",
+              transformOrigin: "left center"
+            }}
+          />
+
           <motion.div
             style={{
               position: "absolute",
@@ -245,7 +304,11 @@ export function ForensicScanSection() {
                               textShadow: row.highlight ? `0 0 6px ${row.color || "rgba(255,255,255,0.4)"}` : "none"
                             }}
                           >
-                            {row.useLiveScore ? `${liveTrustScore}%` : row.val}
+                            {row.useLiveScore ? (
+                              `${liveTrustScore}%`
+                            ) : (
+                              <FastTypewriter text={row.val} />
+                            )}
                           </strong>
                         </motion.div>
                       ))}

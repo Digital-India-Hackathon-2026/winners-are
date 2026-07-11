@@ -3,6 +3,38 @@
 import { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
+function TypewriterText({ text }: { text: string }) {
+  const [displayedText, setDisplayedText] = useState("");
+
+  useEffect(() => {
+    // Check if prefers reduced motion is active
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (prefersReducedMotion) {
+      setDisplayedText(text);
+      return;
+    }
+
+    setDisplayedText("");
+    let i = 0;
+    const interval = setInterval(() => {
+      if (i < text.length) {
+        setDisplayedText(text.substring(0, i + 1));
+        i++;
+      } else {
+        clearInterval(interval);
+      }
+    }, 30);
+    return () => clearInterval(interval);
+  }, [text]);
+
+  return (
+    <span style={{ display: "inline-flex", alignItems: "center" }}>
+      {displayedText}
+      <span className="typewriter-cursor">_</span>
+    </span>
+  );
+}
+
 type ForensicPhoneProps = {
   active?: boolean;
 };
@@ -120,8 +152,8 @@ export function ForensicPhone({ active = true }: ForensicPhoneProps) {
           y: [0, -6, 0]
         }}
         transition={{
-          rotateX: { type: "tween", ease: "easeOut", duration: 0.15 },
-          rotateY: { type: "tween", ease: "easeOut", duration: 0.15 },
+          rotateX: { type: "spring", stiffness: 120, damping: 20 },
+          rotateY: { type: "spring", stiffness: 120, damping: 20 },
           y: { repeat: Infinity, duration: 4.8, ease: "easeInOut" }
         }}
         style={{
@@ -148,7 +180,7 @@ export function ForensicPhone({ active = true }: ForensicPhoneProps) {
                 boxShadow: step === 4 ? "0 0 8px var(--ember)" : "0 0 8px var(--signal)",
                 animation: "pulse 1.5s infinite"
               }} />
-              {getStatusText()}
+              <TypewriterText text={getStatusText()} />
             </span>
           </div>
 
