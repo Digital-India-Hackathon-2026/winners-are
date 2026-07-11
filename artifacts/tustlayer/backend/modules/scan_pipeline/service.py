@@ -54,21 +54,31 @@ class ScanPipelineService:
         # ── Layers 1+2: OCR + Fraud pHash (parallel) ─────────────────────────
         ocr_result, fraud_result = await self.executor.execute_all(image_bytes)
 
-        # ── Non-receipt guard (Step 7) ────────────────────────────────────────
+        # ── Non-receipt guard ─────────────────────────────────────────────────
+        # Only hard-reject if the image is completely unrecognisable:
+        # i.e. OCR found zero payment fields AND the raw text contains no
+        # payment-related keywords at all. Partial extractions always proceed.
         _extractable = [
             ocr_result.fields.payment_amount, ocr_result.fields.receiver_name,
             ocr_result.fields.upi_id, ocr_result.fields.transaction_reference,
             ocr_result.fields.payment_app, ocr_result.fields.timestamp,
-            ocr_result.fields.payment_status if ocr_result.fields.payment_status != "UNKNOWN" else None,
+            ocr_result.fields.payment_status if (ocr_result.fields.payment_status or "").upper() != "UNKNOWN" else None,
         ]
         _extracted = sum(1 for f in _extractable if f)
-        _status = (ocr_result.fields.payment_status or "").upper()
-        if _extracted < 2 and _status not in {"SUCCESS", "FAILED", "PENDING"}:
-            print(f"[PIPELINE] Non-receipt rejected: extracted={_extracted}, status={_status}")
+        _raw = (ocr_result.raw_text or "").lower()
+        _payment_keywords = {
+            "upi", "paid", "payment", "success", "failed", "pending",
+            "₹", "rs.", "inr", "gpay", "phonepe", "paytm", "bhim",
+            "transaction", "transfer", "credited", "debited", "amount",
+            "bank", "account", "@", "rupee",
+        }
+        _has_keywords = any(kw in _raw for kw in _payment_keywords)
+        if _extracted == 0 and not _has_keywords:
+            print(f"[PIPELINE] Non-receipt rejected: extracted={_extracted}, no payment keywords found")
             raise HTTPException(
                 status_code=422,
-                detail="This doesn't look like a completed UPI payment receipt. "
-                       "Please send a screenshot of a successful payment confirmation."
+                detail="This doesn't look like a UPI payment screenshot. "
+                       "Please upload a payment confirmation image."
             )
 
         # ── Layer 3: App Forensics ────────────────────────────────────────────
