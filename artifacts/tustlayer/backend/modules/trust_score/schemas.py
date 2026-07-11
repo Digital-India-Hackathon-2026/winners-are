@@ -64,6 +64,14 @@ class TrustScoreInput(BaseModel):
     replay_detected: bool = Field(default=False, description="Same UTR seen in DB within 24 hours")
     replay_count: int = Field(default=0, description="Number of times this UTR has been submitted")
 
+    # Grounding context fields (v2.0)
+    raw_text: Optional[str] = Field(default=None, description="Raw OCR text for reasoning grounding verification")
+    receiver_name: Optional[str] = Field(default=None, description="Receiver name")
+    payment_amount: Optional[str] = Field(default=None, description="Amount string")
+    upi_id: Optional[str] = Field(default=None, description="UPI ID")
+    upi_transaction_id: Optional[str] = Field(default=None, description="UTR transaction ID")
+    payment_app_name: Optional[str] = Field(default=None, description="Payment app name")
+
 
 class TrustScoreResult(BaseModel):
     trust_score: float = Field(..., ge=0.0, le=100.0, description="0 to 100. Higher = more trustworthy.")

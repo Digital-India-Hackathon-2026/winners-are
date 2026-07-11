@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 
 export type DeepfakeScanResult = {
   deepfake_probability: number;
@@ -81,6 +82,7 @@ export type ScanResponse = {
 type ResultsPanelProps = {
   results: any;
   isScanning?: boolean;
+  onClear?: () => void;
 };
 
 const SCORE_SIGNALS: { key: string; label: string; max: number; color: string }[] = [
@@ -182,7 +184,7 @@ function getQualityBadgeStyle(label: string): { bg: string; text: string } {
   return                                 { bg: "rgba(255,100,80,0.10)",  text: "#ff6450" };
 }
 
-export function ResultsPanel({ results, isScanning }: ResultsPanelProps) {
+export function ResultsPanel({ results, isScanning, onClear }: ResultsPanelProps) {
   const [activeStep, setActiveStep] = useState(0);
 
   useEffect(() => {
@@ -211,7 +213,13 @@ export function ResultsPanel({ results, isScanning }: ResultsPanelProps) {
           Active Scan Diagnostics
         </div>
         
-        <div className="results-panel-content" style={{ display: "flex", flexDirection: "column", gap: "20px", padding: "20px" }}>
+        <motion.div 
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35 }}
+          className="results-panel-content" 
+          style={{ display: "flex", flexDirection: "column", gap: "20px", padding: "20px" }}
+        >
           <div style={{ display: "grid", placeItems: "center", margin: "10px 0" }}>
             <div className="radar-scanner">
               <div className="radar-sweep" />
@@ -249,7 +257,7 @@ export function ResultsPanel({ results, isScanning }: ResultsPanelProps) {
               );
             })}
           </div>
-        </div>
+        </motion.div>
       </div>
     );
   }
@@ -260,13 +268,19 @@ export function ResultsPanel({ results, isScanning }: ResultsPanelProps) {
         <div className="product-panel-header">
           <span className="dot" style={{ background: "rgba(255,255,255,0.2)" }} /> Verification Status
         </div>
-        <div className="results-panel-content" style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px 24px", textAlign: "center", color: "var(--foreground-dim)", gap: "16px", height: "100%" }}>
+        <motion.div 
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="results-panel-content" 
+          style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px 24px", textAlign: "center", color: "var(--foreground-dim)", gap: "16px", height: "100%" }}
+        >
           <div style={{ fontSize: "2.5rem", opacity: 0.75 }}>🛡️</div>
           <strong style={{ fontSize: "0.92rem", color: "var(--foreground)" }}>Ready for Forensic Scan</strong>
           <p style={{ fontSize: "0.78rem", lineHeight: 1.5, margin: 0, maxWidth: "290px", color: "var(--foreground-muted)" }}>
             Upload a transaction screenshot, bank PDF statement, or payment QR code inside the mockup screen to generate a real-time risk assessment report.
           </p>
-        </div>
+        </motion.div>
       </div>
     );
   }
@@ -478,13 +492,40 @@ export function ResultsPanel({ results, isScanning }: ResultsPanelProps) {
 
   return (
     <div className="product-panel results-panel">
-      <div className="product-panel-header">
-        <span className="dot" /> Forensic Results
+      <div className="product-panel-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <span style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <span className="dot" style={{ backgroundColor: scoreColor, boxShadow: `0 0 10px ${scoreColor}` }} /> Forensic Results
+        </span>
+        {onClear && (
+          <button 
+            onClick={onClear}
+            style={{
+              background: "rgba(255, 255, 255, 0.05)",
+              border: "1px solid var(--border)",
+              borderRadius: "12px",
+              padding: "4px 10px",
+              fontSize: "0.64rem",
+              fontWeight: 800,
+              color: "var(--foreground-dim)",
+              cursor: "pointer",
+              transition: "all 0.2s ease"
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.background = "rgba(255, 255, 255, 0.1)"}
+            onMouseLeave={(e) => e.currentTarget.style.background = "rgba(255, 255, 255, 0.05)"}
+          >
+            Reset Scan
+          </button>
+        )}
       </div>
 
       <div className="results-panel-content">
         {/* ── Trust Score Hero ── */}
-        <div className="result-block">
+        <motion.div 
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="result-block"
+        >
           <div className="result-score">
             <div className="result-score-number" style={{ color: scoreColor }}>
               {Math.round(trust_score_data.trust_score)}
@@ -504,23 +545,33 @@ export function ResultsPanel({ results, isScanning }: ResultsPanelProps) {
               </div>
             )}
           </div>
-        </div>
+        </motion.div>
 
         {/* ── Score Breakdown ── */}
         {deterministic_flags?.score_breakdown && (
-          <div className="result-block">
+          <motion.div 
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.12 }}
+            className="result-block"
+          >
             <h4 className="result-block-title">Score Breakdown</h4>
             <ScoreBreakdown
               breakdown={deterministic_flags.score_breakdown}
               caps={deterministic_flags.triggered_caps}
             />
-          </div>
+          </motion.div>
         )}
 
         {/* ── Deterministic Flags ── */}
         {deterministic_flags && (
-          <div className="result-block">
-            <h4 className="result-block-title">Deterministic Flags</h4>
+          <motion.div 
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.18 }}
+            className="result-block"
+          >
+            <h4 className="result-block-title">Security Flags Check</h4>
             <div className="flags-grid">
               <FlagChip
                 label="Foreign Currency"
@@ -550,12 +601,17 @@ export function ResultsPanel({ results, isScanning }: ResultsPanelProps) {
                 detail={deterministic_flags.replay_count > 0 ? `${deterministic_flags.replay_count}×` : undefined}
               />
             </div>
-          </div>
+          </motion.div>
         )}
 
         {/* ── Deepfake Detection ── */}
         {deepfake_data && (
-          <div className="result-block">
+          <motion.div 
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.24 }}
+            className="result-block"
+          >
             <h4 className="result-block-title">Deepfake Detection</h4>
             <div style={{ marginBottom: "10px" }}>
               <div className="score-bar-meta">
@@ -597,12 +653,17 @@ export function ResultsPanel({ results, isScanning }: ResultsPanelProps) {
                 ))}
               </ul>
             )}
-          </div>
+          </motion.div>
         )}
 
         {/* ── App Forensics ── */}
         {app_forensics && (
-          <div className="result-block">
+          <motion.div 
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.3 }}
+            className="result-block"
+          >
             <h4 className="result-block-title">App Forensics</h4>
             <div className="result-row">
               <span className="label">Detected App</span>
@@ -631,12 +692,17 @@ export function ResultsPanel({ results, isScanning }: ResultsPanelProps) {
                 {app_forensics.explanation}
               </p>
             )}
-          </div>
+          </motion.div>
         )}
 
         {/* ── UPI & Transaction Integrity ── */}
         {(vpa_validation_data || deterministic_flags) && (
-          <div className="result-block">
+          <motion.div 
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.36 }}
+            className="result-block"
+          >
             <h4 className="result-block-title">UPI & Transaction Integrity</h4>
             
             {vpa_validation_data && (
@@ -680,11 +746,16 @@ export function ResultsPanel({ results, isScanning }: ResultsPanelProps) {
                 </span>
               </div>
             )}
-          </div>
+          </motion.div>
         )}
 
         {/* ── OCR Data ── */}
-        <div className="result-block">
+        <motion.div 
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.42 }}
+          className="result-block"
+        >
           <h4 className="result-block-title" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
             OCR Data
             <span style={{
@@ -711,10 +782,15 @@ export function ResultsPanel({ results, isScanning }: ResultsPanelProps) {
               <span className="value">{value}</span>
             </div>
           ))}
-        </div>
+        </motion.div>
 
         {/* ── Fraud Intelligence ── */}
-        <div className="result-block">
+        <motion.div 
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.48 }}
+          className="result-block"
+        >
           <h4 className="result-block-title">Fraud Intelligence</h4>
           <div className="result-row">
             <span className="label">Template Match</span>
@@ -730,10 +806,15 @@ export function ResultsPanel({ results, isScanning }: ResultsPanelProps) {
             <span className="label">Fraud Type</span>
             <span className="value">{fraud_intelligence_data.fraud_type || "None Detected"}</span>
           </div>
-        </div>
+        </motion.div>
 
         {/* ── AI Reasoning ── */}
-        <div className="result-block">
+        <motion.div 
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.54 }}
+          className="result-block"
+        >
           <h4 className="result-block-title">AI Reasoning</h4>
           <ul style={{ padding: 0, margin: "8px 0 0 0", listStyle: "none" }}>
             {(trust_score_data.confidence_reasoning.length > 0
@@ -743,10 +824,15 @@ export function ResultsPanel({ results, isScanning }: ResultsPanelProps) {
               <li key={idx} className="result-reason">{reason}</li>
             ))}
           </ul>
-        </div>
+        </motion.div>
 
         {/* ── Recommended Actions ── */}
-        <div className="result-block">
+        <motion.div 
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.6 }}
+          className="result-block"
+        >
           <h4 className="result-block-title">Recommended Actions</h4>
           <ul style={{ padding: 0, margin: "8px 0 0 0", listStyle: "none" }}>
             {(trust_score_data.recommended_actions.length > 0
@@ -756,16 +842,45 @@ export function ResultsPanel({ results, isScanning }: ResultsPanelProps) {
               <li key={idx} className="result-action">{action}</li>
             ))}
           </ul>
-        </div>
+        </motion.div>
 
         {/* ── Scan Metadata ── */}
-        <div className="result-block">
+        <motion.div 
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.66 }}
+          className="result-block"
+        >
           <h4 className="result-block-title">Scan Metadata</h4>
           <div className="result-row">
             <span className="label">Execution Time</span>
             <span className="value">{(metadata.execution_time_ms / 1000).toFixed(2)}s</span>
           </div>
-        </div>
+        </motion.div>
+
+        {/* Scan Another File persistent CTA */}
+        {onClear && (
+          <motion.button
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.72 }}
+            onClick={onClear}
+            className="btn-ghost"
+            style={{
+              marginTop: "20px",
+              width: "100%",
+              justifyContent: "center",
+              fontSize: "0.76rem",
+              padding: "10px 16px",
+              display: "flex",
+              borderColor: "var(--signal)",
+              color: "var(--signal)",
+              background: "rgba(219, 255, 74, 0.02)"
+            }}
+          >
+            Scan Another Document
+          </motion.button>
+        )}
       </div>
     </div>
   );

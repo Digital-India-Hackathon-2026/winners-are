@@ -16,6 +16,7 @@ import time
 import json
 import asyncio
 from typing import Optional
+from fastapi import HTTPException
 
 from backend.modules.scan_pipeline.schemas import (
     FinalScanResponse, ScanMetadata,
@@ -52,6 +53,23 @@ class ScanPipelineService:
 
         # ── Layers 1+2: OCR + Fraud pHash (parallel) ─────────────────────────
         ocr_result, fraud_result = await self.executor.execute_all(image_bytes)
+
+        # ── Non-receipt guard (Step 7) ────────────────────────────────────────
+        _extractable = [
+            ocr_result.fields.payment_amount, ocr_result.fields.receiver_name,
+            ocr_result.fields.upi_id, ocr_result.fields.transaction_reference,
+            ocr_result.fields.payment_app, ocr_result.fields.timestamp,
+            ocr_result.fields.payment_status if ocr_result.fields.payment_status != "UNKNOWN" else None,
+        ]
+        _extracted = sum(1 for f in _extractable if f)
+        _status = (ocr_result.fields.payment_status or "").upper()
+        if _extracted < 2 and _status not in {"SUCCESS", "FAILED", "PENDING"}:
+            print(f"[PIPELINE] Non-receipt rejected: extracted={_extracted}, status={_status}")
+            raise HTTPException(
+                status_code=422,
+                detail="This doesn't look like a completed UPI payment receipt. "
+                       "Please send a screenshot of a successful payment confirmation."
+            )
 
         # ── Layer 3: App Forensics ────────────────────────────────────────────
         app_forensics_result = await self.app_forensics_service.analyze_image(
@@ -171,6 +189,21 @@ class ScanPipelineService:
         yield f'data: {json.dumps({"status": "processing", "step": "scanning", "message": "Running OCR and Fraud Intelligence concurrently..."})}\n\n'
         ocr_result, fraud_result = await self.executor.execute_all(image_bytes)
         exif_result = self.metadata_service.analyze(image_bytes)
+
+        # Non-receipt guard (Step 7)
+        _extractable = [
+            ocr_result.fields.payment_amount, ocr_result.fields.receiver_name,
+            ocr_result.fields.upi_id, ocr_result.fields.transaction_reference,
+            ocr_result.fields.payment_app, ocr_result.fields.timestamp,
+            ocr_result.fields.payment_status if ocr_result.fields.payment_status != "UNKNOWN" else None,
+        ]
+        _extracted = sum(1 for f in _extractable if f)
+        _status = (ocr_result.fields.payment_status or "").upper()
+        if _extracted < 2 and _status not in {"SUCCESS", "FAILED", "PENDING"}:
+            print(f"[PIPELINE] Non-receipt rejected (stream): extracted={_extracted}, status={_status}")
+            _msg = "This doesn't look like a completed UPI payment receipt. Please send a screenshot of a successful payment confirmation."
+            yield f'data: {json.dumps({"status": "error", "step": "rejected", "message": _msg})}\n\n'
+            return
 
         # Layer 3
         yield f'data: {json.dumps({"status": "processing", "step": "app_detection", "message": "Verifying app branding and color fingerprints..."})}\n\n'

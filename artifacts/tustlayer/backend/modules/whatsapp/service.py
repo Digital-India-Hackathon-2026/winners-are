@@ -1,4 +1,5 @@
 import httpx
+from fastapi import HTTPException
 from backend.core.config import settings
 from backend.modules.scan_pipeline.service import get_scan_pipeline_service
 from backend.modules.qr_inspector.service import get_qr_inspector_service
@@ -31,7 +32,7 @@ async def download_twilio_media(media_url: str) -> bytes:
         return resp.content
 
 
-async def analyze_media(file_bytes: bytes, content_type: str) -> str:
+async def analyze_media(file_bytes: bytes, content_type: str, is_senior: bool = False) -> str:
     """Routes bytes through the same detection pipeline used by the web app,
     then returns a short, WhatsApp-ready summary string."""
     if len(file_bytes) > MAX_MEDIA_BYTES:
@@ -43,16 +44,20 @@ async def analyze_media(file_bytes: bytes, content_type: str) -> str:
         if is_pdf:
             doc_service = get_document_scanner_service()
             res = await doc_service.scan(file_bytes, content_type)
-            return format_document_result(res.model_dump())
+            return format_document_result(res.model_dump(), is_senior)
 
         qr_service = get_qr_inspector_service()
         qr_res = await qr_service.inspect(file_bytes)
         if qr_res.qr_found:
-            return format_qr_result(qr_res.model_dump())
+            return format_qr_result(qr_res.model_dump(), is_senior)
 
         scan_service = get_scan_pipeline_service()
         scan_res = await scan_service.execute_full_scan(file_bytes)
-        return format_screenshot_result(scan_res.model_dump())
+        return format_screenshot_result(scan_res.model_dump(), is_senior)
+    except HTTPException as he:
+        # Propagate friendly pipeline messages (e.g. non-receipt rejection) directly to user
+        print(f"[WhatsApp] Pipeline rejected: {he.detail}")
+        return he.detail
     except Exception as e:
         print(f"[WhatsApp] Analysis failed: {e}")
         return (

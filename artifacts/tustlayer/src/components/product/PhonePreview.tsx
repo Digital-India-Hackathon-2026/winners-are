@@ -101,6 +101,29 @@ export function PhonePreview({
                         mixBlendMode: "overlay",
                         animation: "pulseScan 2s infinite alternate"
                       }} />
+                      <div style={{
+                        position: "absolute",
+                        bottom: "20px",
+                        left: "50%",
+                        transform: "translateX(-50%)",
+                        background: "rgba(10, 10, 9, 0.88)",
+                        border: "1px solid var(--signal)",
+                        borderRadius: "20px",
+                        padding: "6px 14px",
+                        color: "var(--signal)",
+                        fontSize: "0.68rem",
+                        fontFamily: "var(--font-mono)",
+                        fontWeight: 900,
+                        letterSpacing: "0.06em",
+                        boxShadow: "0 0 12px rgba(219, 255, 74, 0.3)",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "6px",
+                        zIndex: 20
+                      }}>
+                        <span className="wa-live-dot" style={{ width: "6px", height: "6px", background: "var(--signal)", boxShadow: "0 0 6px var(--signal)" }} />
+                        ANALYZING PIXELS
+                      </div>
                     </>
                   )}
                 </div>
@@ -156,6 +179,9 @@ export function PhonePreview({
                   cursor: "pointer",
                   textAlign: "center",
                   transition: "all 0.3s ease",
+                  margin: "12px",
+                  borderRadius: "16px",
+                  border: isDragging ? "2px dashed var(--signal)" : "1px dashed rgba(255, 248, 238, 0.15)",
                   background: isDragging ? "rgba(219, 255, 74, 0.03)" : "transparent"
                 }}
               >
@@ -193,6 +219,7 @@ export function PhonePreview({
                 <div style={{ marginTop: "32px", display: "flex", flexDirection: "column", gap: "8px", width: "100%" }}>
                   <button 
                     onClick={(e) => { e.stopPropagation(); onLoadDemo(); }} 
+                    className="demo-button-pulse"
                     style={{
                       background: "rgba(255, 255, 255, 0.04)",
                       border: "1px solid var(--border)",
@@ -209,6 +236,30 @@ export function PhonePreview({
                   >
                     Load Sample Demo
                   </button>
+                  
+                  <a 
+                    href="https://wa.me/14155238886?text=join%20choose-factory"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    style={{
+                      fontSize: "0.70rem",
+                      color: "#25d366",
+                      textDecoration: "none",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: "4px",
+                      opacity: 0.85,
+                      transition: "opacity 0.2s",
+                      fontWeight: 700,
+                      marginTop: "16px"
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.opacity = "1"}
+                    onMouseLeave={(e) => e.currentTarget.style.opacity = "0.85"}
+                  >
+                    Prefer WhatsApp? Scan without uploading here →
+                  </a>
                 </div>
               </div>
             )}

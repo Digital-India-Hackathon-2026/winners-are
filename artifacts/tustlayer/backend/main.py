@@ -13,6 +13,7 @@ from backend.modules.scan_pipeline.mock_router import router as mock_router
 from backend.modules.qr_inspector.router import router as qr_inspector_router
 from backend.modules.document_scanner.router import router as document_scanner_router
 from backend.modules.whatsapp.router import router as whatsapp_router
+from backend.modules.chatbot.router import router as chatbot_router
 
 app = FastAPI(
     title="TrustLayer AI API",
@@ -35,11 +36,25 @@ app.include_router(scan_pipeline_router)
 app.include_router(mock_router)
 app.include_router(qr_inspector_router)
 app.include_router(document_scanner_router)
-app.include_router(whatsapp_router)
+from backend.version import GIT_COMMIT, GIT_BRANCH, DEPLOYED_AT
 
+print(f"[TrustLayer AI] Starting server. Branch: {GIT_BRANCH}, Commit: {GIT_COMMIT}, Deployed At: {DEPLOYED_AT}")
+
+app.include_router(whatsapp_router)
+app.include_router(chatbot_router)
+
+@app.get("/api/health")
 @app.get("/health")
 async def health_check():
-    return {"status": "ok", "service": "TrustLayer AI"}
+    return {"status": "ok", "service": "TrustLayer AI", "version": GIT_COMMIT}
+
+@app.get("/api/v1/version")
+async def get_version():
+    return {
+        "git_commit": GIT_COMMIT,
+        "deployed_at": DEPLOYED_AT,
+        "git_branch": GIT_BRANCH
+    }
 
 @app.get("/", response_class=HTMLResponse)
 async def homepage():

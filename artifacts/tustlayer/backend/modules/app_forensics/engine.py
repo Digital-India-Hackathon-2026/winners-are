@@ -1,4 +1,6 @@
 import io
+import os
+import json
 from PIL import Image
 from typing import Dict, Any, Tuple
 from backend.modules.app_forensics.schemas import AppForensicsResult
@@ -133,6 +135,7 @@ class AppForensicsEngine:
 
     def analyze(self, image_bytes: bytes, raw_text: str, claimed_app: str = None) -> AppForensicsResult:
         try:
+            passed_claimed_app = claimed_app
             # 1. Parse Image and crop solid border padding
             orig_img = Image.open(io.BytesIO(image_bytes))
             img = self._crop_padding(orig_img)
@@ -263,25 +266,43 @@ class AppForensicsEngine:
             lime_pct_header = lime_pixels_header / header_total
 
             # 4. Correlate claimed text with actual color profile
-            detected_app = "Unknown"
+            # Use the claimed_app parameter as detected_app when not None, falling back to color-profile heuristic
+            if passed_claimed_app:
+                detected_app = claimed_app
+                print(f"[APP-FORENSICS] Claimed app verified from Vision UI analysis: {detected_app}")
+            else:
+                # Fallback to color-profile heuristic when claimed_app is None
+                color_guesses = []
+                if purple_pct > 0.10 or purple_pct_header > 0.15:
+                    color_guesses.append(("PhonePe", max(purple_pct, purple_pct_header)))
+                if cyan_pct > 0.10 or cyan_pct_header > 0.15:
+                    color_guesses.append(("Paytm", max(cyan_pct, cyan_pct_header)))
+                if lime_pct > 0.10 or lime_pct_header > 0.15:
+                    color_guesses.append(("super.money", max(lime_pct, lime_pct_header)))
+                if dark_pct > 0.35:
+                    color_guesses.append(("Cred", dark_pct))
+                if orange_pct > 0.15:
+                    color_guesses.append(("FamPay", orange_pct))
+                    
+                if color_guesses:
+                    detected_app = max(color_guesses, key=lambda x: x[1])[0]
+                    print(f"[APP-FORENSICS] No claimed app. Guessed app from color profiling: {detected_app}")
+                else:
+                    # Fallback to keyword guessing from step 2
+                    detected_app = claimed_app if claimed_app else "Unknown"
+
             logo_match = False
             layout_consistency = "HIGH"
             font_consistency = self._check_font_alignments(img)
             suspected_clone = False
             authenticity_score = 0.95
-            explanation = ""
+            explanation = "Aesthetic parameters checked."
 
             # Check if dimensions are extremely odd
             is_mobile_ratio = 1.3 < aspect_ratio < 2.5
-            
-            # Match rules
-            # AI-first app detection fallback. We let the Vision LLM verify the branding in real time.
-            detected_app = "Unknown"
-            logo_match = False
-            explanation = "Aesthetic parameters checked."
 
             # 5. Dynamic Perceptual Layout Verification
-            # Reference aHash signatures for standard success templates
+            # Load signatures from reference_hashes.json, falling back to static dict
             ref_hashes = {
                 "PhonePe": ["ff81c3c3e7e781ff", "3f3f0f0f1f3f7fff"],
                 "Paytm": ["e3c3c1818181c3e3", "ffffc3c3c3c3ffff"],
@@ -289,6 +310,18 @@ class AppForensicsEngine:
                 "super.money": ["81c3e7ffffffe7c3", "ffc381c3c381c3ff"]
             }
             
+            try:
+                current_dir = os.path.dirname(os.path.abspath(__file__))
+                json_path = os.path.join(current_dir, "reference_hashes.json")
+                if os.path.exists(json_path):
+                    with open(json_path, "r", encoding="utf-8") as json_file:
+                        loaded_hashes = json.load(json_file)
+                        if isinstance(loaded_hashes, dict):
+                            ref_hashes.update(loaded_hashes)
+                            print(f"[APP-FORENSICS] Loaded layout reference hashes from {json_path}")
+            except Exception as e:
+                print(f"[APP-FORENSICS] Error loading reference_hashes.json: {e}")
+
             matched_layout = False
             best_distance = 999
             if detected_app in ref_hashes:

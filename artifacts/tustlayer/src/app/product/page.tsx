@@ -16,6 +16,16 @@ export default function ProductPage() {
   const [errorMsg,      setErrorMsg]      = useState<string | null>(null);
 
   const handleFileSelect = (file: File) => {
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/svg+xml", "application/pdf"];
+    if (!allowedTypes.includes(file.type)) {
+      setErrorMsg("Unsupported format. Please upload a receipt image (JPEG, PNG, WEBP, SVG) or a PDF.");
+      setSelectedFile(null);
+      setUploadedImage(null);
+      setUploadedName("");
+      setScanResults(null);
+      return;
+    }
+
     if (file.size > 50 * 1024 * 1024) {
       setErrorMsg("File exceeds 50MB size limit. Please upload a smaller document.");
       setSelectedFile(null);
@@ -68,7 +78,7 @@ export default function ProductPage() {
         const uploadResponse = await fetch(uploadUrl, {
           method: "POST",
           headers: {
-            "Authorization": `Bearer {supabaseKey}`,
+            "Authorization": `Bearer ${supabaseKey}`,
             "apikey": supabaseKey,
             "Content-Type": selectedFile.type,
             "x-upsert": "true"
@@ -154,7 +164,7 @@ export default function ProductPage() {
           onClear={handleClear}
           errorMsg={errorMsg}
         />
-        <ResultsPanel results={scanResults} isScanning={isScanning} />
+        <ResultsPanel results={scanResults} isScanning={isScanning} onClear={handleClear} />
       </div>
     </div>
   );

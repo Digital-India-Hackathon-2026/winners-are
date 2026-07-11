@@ -293,4 +293,12 @@ class ResultAggregator:
             timestamp_late_night=timestamp_late_night,
             replay_detected=replay_detected,
             replay_count=replay_count,
+
+            # Grounding context fields
+            raw_text=raw_text,
+            receiver_name=ocr.fields.receiver_name or (vpa_name_match if vpa_name_match else None),
+            payment_amount=amount,
+            upi_id=upi_id,
+            upi_transaction_id=resolved_utr or utr,
+            payment_app_name=ocr.fields.payment_app_name or app_forensics.detected_app
         )

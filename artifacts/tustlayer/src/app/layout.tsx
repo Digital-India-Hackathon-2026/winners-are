@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { Navigation } from "@/components/shared/Navigation";
 import { ThemeProvider } from "@/components/shared/ThemeProvider";
+import { ChatWidget } from "@/components/shared/ChatWidget";
 
 export const metadata: Metadata = {
   title: "TrustLayer AI — UPI Payment Proof Forensics",
@@ -33,6 +34,7 @@ export default function RootLayout({
               .
             </p>
           </footer>
+          <ChatWidget />
         </ThemeProvider>
       </body>
     </html>

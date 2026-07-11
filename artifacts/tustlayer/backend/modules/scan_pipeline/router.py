@@ -168,6 +168,8 @@ async def execute_unified_scan(
             "anonymous_session_id": context.get("uid"),
             "remaining_scans": context.get("remaining_scans", -1)
         }
+    except HTTPException as he:
+        raise he
     except Exception as e:
         print(f"Unified Scanner Pipeline Error: {e}")
         raise HTTPException(
