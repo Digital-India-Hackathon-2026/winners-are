@@ -64,6 +64,12 @@ class TrustScoreInput(BaseModel):
     replay_detected: bool = Field(default=False, description="Same UTR seen in DB within 24 hours")
     replay_count: int = Field(default=0, description="Number of times this UTR has been submitted")
 
+    # Amount-edit fraud signal (v2.1)
+    amount_edit_suspected: bool = Field(
+        default=False,
+        description="Font/layout forensics suggest only the amount field was photoshopped"
+    )
+
     # Grounding context fields (v2.0)
     raw_text: Optional[str] = Field(default=None, description="Raw OCR text for reasoning grounding verification")
     receiver_name: Optional[str] = Field(default=None, description="Receiver name")

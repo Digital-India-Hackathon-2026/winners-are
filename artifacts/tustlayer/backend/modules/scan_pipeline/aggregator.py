@@ -226,6 +226,18 @@ class ResultAggregator:
         if foreign_currency:
             layout_flaws += 2
 
+        # ── Amount-edit fraud detection ──────────────────────────────────────
+        # Classic fraud: photoshop just the amount field, leave UTR/VPA intact.
+        # We flag this when the font/layout forensics report suspicious or
+        # inconsistent rendering on an otherwise "complete" receipt.
+        font_ok = app_forensics.font_consistency not in ["SUSPICIOUS", "INCONSISTENT"]
+        amount_edit_suspected = (
+            not font_ok
+            and utr_valid                        # UTR is valid (receipt looks "real")
+            and bool(amount)                     # Amount was extracted
+            and app_forensics.app_authenticity_score < 0.80  # But overall authenticity is imperfect
+        )
+
         # ── AI visual flags ───────────────────────────────────────────────────
         ai_flags = 0
         if app_forensics.font_consistency in ["SUSPICIOUS", "INCONSISTENT"]:
@@ -236,6 +248,8 @@ class ResultAggregator:
             ai_flags += 1
         if utr_format_violation or foreign_currency:
             ai_flags += 2
+        if amount_edit_suspected:
+            ai_flags += 3  # strong signal: font inconsistency on valid receipt
 
         # ── Field extraction count ────────────────────────────────────────────
         extractable = [
@@ -293,6 +307,7 @@ class ResultAggregator:
             timestamp_late_night=timestamp_late_night,
             replay_detected=replay_detected,
             replay_count=replay_count,
+            amount_edit_suspected=amount_edit_suspected,
 
             # Grounding context fields
             raw_text=raw_text,

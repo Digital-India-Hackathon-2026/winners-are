@@ -30,6 +30,7 @@ CAP_MISSING_EXIF       = 70   # Missing EXIF (high risk)
 CAP_DEEPFAKE           = 25   # Deepfake score > 0.70
 CAP_ELA_ANOMALY        = 40   # Error Level Analysis score > 0.8
 CAP_VPA_NOT_EXIST      = 20   # Razorpay says VPA does not exist
+CAP_AMOUNT_EDIT        = 45   # Font inconsistency on amount field (photoshop-amount fraud)
 
 
 class TrustScoreEngine:
@@ -150,6 +151,14 @@ class TrustScoreEngine:
             if score > CAP_VPA_NOT_EXIST:
                 score = CAP_VPA_NOT_EXIST
                 triggered.append(f"VPA does not exist per Razorpay lookup → cap {CAP_VPA_NOT_EXIST}")
+
+        # Amount-edit fraud: font inconsistency on a visually complete receipt
+        if getattr(data, 'amount_edit_suspected', False):
+            if score > CAP_AMOUNT_EDIT:
+                score = CAP_AMOUNT_EDIT
+                triggered.append(
+                    f"Font/visual inconsistency on amount field detected (possible photoshopped amount) → cap {CAP_AMOUNT_EDIT}"
+                )
 
         return score, triggered
 

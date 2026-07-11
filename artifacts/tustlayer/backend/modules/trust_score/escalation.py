@@ -75,6 +75,14 @@ class RiskEscalationLayer:
                 final = min(score, 38.0)
                 return (final, RiskLevel.MEDIUM, 0.45, "Needs Review")
 
+        # Amount-edit fraud: font inconsistency on an otherwise valid receipt
+        # Score is already capped at 45 by engine; force MEDIUM+HIGH verdict
+        if getattr(data, 'amount_edit_suspected', False):
+            final = min(score, 45.0)
+            if final <= 35:
+                return (final, RiskLevel.HIGH, 0.78, "Possible Tampering")
+            return (final, RiskLevel.MEDIUM, 0.62, "Possible Tampering")
+
         # ── GRADUATED VERDICTS (score-based) ─────────────────────────────────
 
         if score >= 85.0:

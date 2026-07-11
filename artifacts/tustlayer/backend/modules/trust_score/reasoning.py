@@ -94,6 +94,11 @@ class ConfidenceReasoningGenerator:
             reasons.append("Image layout strongly matches known fake payment generator templates.")
         if not getattr(data, 'app_branding_match', True):
             reasons.append("The logo or layout does not match the official payment app design.")
+        if getattr(data, 'amount_edit_suspected', False):
+            reasons.append(
+                "The amount field shows font or rendering inconsistency compared to the rest of the receipt — "
+                "this is the most common sign of a photoshopped payment screenshot where only the amount was changed."
+            )
 
         if getattr(data, 'foreign_currency_detected', False):
             reasons.append("Foreign currency symbol detected, which is unusual for standard domestic UPI.")

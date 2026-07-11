@@ -1,0 +1,73 @@
+{
+  "generated_at": "2026-07-11T06:34:56Z",
+  "purpose": "TrustLayer AI threat-simulation test corpus",
+  "warning": "FOR TESTING ONLY \u2014 no live malware payload in any file",
+  "files": [
+    {
+      "filename": "test_pdf_js_attachment.pdf",
+      "path": "C:\\Users\\admin.DESKTOP-7EBDCSF\\.gemini\\antigravity\\scratch\\winners-are\\test_docs\\output\\test_pdf_js_attachment.pdf",
+      "size_bytes": 1447,
+      "threats": [
+        "Embedded JavaScript (OpenAction)",
+        "File attachment (exe)",
+        "External URI action",
+        "AcroForm"
+      ],
+      "expected_flags": [
+        "JS_OPENACTION",
+        "EMBEDDED_EXE",
+        "EXTERNAL_C2_URI",
+        "ACROFORM_PRESENT"
+      ]
+    },
+    {
+      "filename": "test_steg_polyglot.png",
+      "path": "C:\\Users\\admin.DESKTOP-7EBDCSF\\.gemini\\antigravity\\scratch\\winners-are\\test_docs\\output\\test_steg_polyglot.png",
+      "size_bytes": 11114,
+      "threats": [
+        "LSB steganography (tEXt/zTXt chunks)",
+        "Polyglot file (PNG+ZIP)",
+        "Appended data after IEND"
+      ],
+      "expected_flags": [
+        "STEG_TEXT_CHUNK",
+        "APPENDED_DATA_AFTER_IEND",
+        "POLYGLOT_ZIP"
+      ]
+    },
+    {
+      "filename": "test_macro_docx.docm",
+      "path": "C:\\Users\\admin.DESKTOP-7EBDCSF\\.gemini\\antigravity\\scratch\\winners-are\\test_docs\\output\\test_macro_docx.docm",
+      "size_bytes": 2140,
+      "threats": [
+        "VBA project stub (CFB magic)",
+        "External OLE object link",
+        "AutoOpen macro pattern",
+        "Embedded OLE object"
+      ],
+      "expected_flags": [
+        "VBA_PROJECT_PRESENT",
+        "EXTERNAL_OLE_LINK",
+        "AUTOOPEN_PATTERN",
+        "EMBEDDED_OLE"
+      ]
+    },
+    {
+      "filename": "test_obfuscated_pdf.pdf",
+      "path": "C:\\Users\\admin.DESKTOP-7EBDCSF\\.gemini\\antigravity\\scratch\\winners-are\\test_docs\\output\\test_obfuscated_pdf.pdf",
+      "size_bytes": 1577,
+      "threats": [
+        "Hex-obfuscated /JavaScript name",
+        "XFA JavaScript",
+        "/Launch action",
+        "Unicode JS stream"
+      ],
+      "expected_flags": [
+        "OBFUSCATED_JS_NAME",
+        "XFA_JAVASCRIPT",
+        "LAUNCH_ACTION",
+        "RICHTEXT_STREAM"
+      ]
+    }
+  ]
+}
