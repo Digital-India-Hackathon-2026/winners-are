@@ -4,7 +4,14 @@ from twilio.twiml.messaging_response import MessagingResponse
 from twilio.request_validator import RequestValidator
 
 from backend.core.config import settings
-from backend.modules.whatsapp.service import download_twilio_media, analyze_media
+from backend.modules.whatsapp.service import (
+    download_twilio_media,
+    analyze_media,
+    get_user_language,
+    set_user_language,
+    translate_response
+)
+from backend.integrations.sarvam_client import LANGUAGE_MAP
 
 router = APIRouter(prefix="/api/v1/whatsapp", tags=["WhatsApp Bot"])
 
@@ -36,6 +43,31 @@ async def whatsapp_webhook(request: Request):
     inbound_text = form.get("Body", "").strip()
     inbound_text_lower = inbound_text.lower()
     
+    phone_number = form.get("From", "")
+    
+    # 1. Check if the message is a language selection command
+    clean_input = inbound_text_lower.strip("!.,? ")
+    selected_lang_code = None
+    if clean_input in LANGUAGE_MAP:
+        selected_lang_code = LANGUAGE_MAP[clean_input]
+    else:
+        # Check if the input contains a language name as a substring
+        for key, code in LANGUAGE_MAP.items():
+            if len(key) >= 4 and key in clean_input:
+                selected_lang_code = code
+                break
+
+    if selected_lang_code:
+        set_user_language(phone_number, selected_lang_code)
+        confirm_text = "Language preference updated successfully. Responses will now be sent in this language."
+        translated_confirm = await translate_response(confirm_text, selected_lang_code)
+        twiml = MessagingResponse()
+        twiml.message(translated_confirm)
+        return Response(content=str(twiml), media_type="application/xml")
+
+    # 2. Get the user's current language preference
+    user_lang = get_user_language(phone_number)
+    
     is_senior = any(kw in inbound_text_lower for kw in ["senior", "elderly", "grandpa", "grandma", "simple"])
     
     twiml = MessagingResponse()
@@ -43,7 +75,7 @@ async def whatsapp_webhook(request: Request):
     # Welcome message if no file is sent
     if num_media == 0:
         if is_senior:
-            twiml.message(
+            welcome_msg = (
                 "Hello! I am TrustLayer.\n\n"
                 "I am here to help you check if payment pictures or links are safe.\n\n"
                 "I am private and safe. I never save your details.\n\n"
@@ -51,11 +83,18 @@ async def whatsapp_webhook(request: Request):
                 "I will read it and guide you step by step."
             )
         else:
-            twiml.message(
+            welcome_msg = (
                 "Hello! I am TrustLayer, your digital safety assistant. I help you verify if a payment screenshot, QR code, website link, or document is safe to trust.\n\n"
                 "Your files are checked securely and privately. They are never saved or shared with anyone.\n\n"
                 "Just send me any suspicious screenshot, QR code, website link, or PDF. I'll inspect it carefully and let you know if it's safe."
             )
+            
+        lang_instruction = (
+            "\n\n🌐 To get replies in your preferred Indian language, reply with the name of the language (e.g. Hindi, Telugu, Tamil, Marathi, Bengali, Gujarati, Kannada, Malayalam, Punjabi, English)."
+        )
+        
+        translated_welcome = await translate_response(welcome_msg + lang_instruction, user_lang)
+        twiml.message(translated_welcome)
         return Response(content=str(twiml), media_type="application/xml")
 
     # Rotated reassuring acknowledgments
@@ -70,7 +109,8 @@ async def whatsapp_webhook(request: Request):
     if is_senior:
         ack_msg = "I have received your file. Please wait a moment while I check it carefully for you. This will take less than 15 seconds."
         
-    twiml.message(ack_msg)
+    translated_ack = await translate_response(ack_msg, user_lang)
+    twiml.message(translated_ack)
 
     media_url = form.get("MediaUrl0")
     content_type = form.get("MediaContentType0", "")
@@ -88,5 +128,6 @@ async def whatsapp_webhook(request: Request):
                 "resending it."
             )
 
-    twiml.message(reply_text)
+    translated_reply = await translate_response(reply_text, user_lang)
+    twiml.message(translated_reply)
     return Response(content=str(twiml), media_type="application/xml")

@@ -1,5 +1,6 @@
 """Turns raw scan-pipeline JSON into a short, human WhatsApp message."""
 import random
+import re
 
 EDUCATIONAL_TIPS = [
     "Remember: A screenshot is never proof of payment. Always verify inside your own banking app.",
@@ -98,10 +99,21 @@ def generate_whatsapp_response(
         ]
         
         if risk_level == "High Risk":
+            involves_money = scam_type in (
+                "Fake UPI Screenshot",
+                "Fake QR Code",
+                "Investment Scam",
+                "Fake Bank Statement",
+                "general"
+            ) and "content policy" not in why_concerned.lower() and "suggestive" not in why_concerned.lower()
+
             lines += [
                 "",
                 "If you need urgent help:",
-                "• Call your bank immediately if you sent money.",
+            ]
+            if involves_money:
+                lines.append("• Call your bank immediately if you sent money.")
+            lines += [
                 "• Call government safety helpers at 1930.",
                 "• Report to website: cybercrime.gov.in"
             ]
@@ -167,10 +179,21 @@ def generate_whatsapp_response(
         ]
         
         if risk_level == "High Risk":
+            involves_money = scam_type in (
+                "Fake UPI Screenshot",
+                "Fake QR Code",
+                "Investment Scam",
+                "Fake Bank Statement",
+                "general"
+            ) and "content policy" not in why_concerned.lower() and "suggestive" not in why_concerned.lower()
+
             lines += [
                 "---------------------------------------",
                 "*Need urgent help?*",
-                "• Call your bank immediately if money has already been transferred.",
+            ]
+            if involves_money:
+                lines.append("• Call your bank immediately if money has already been transferred.")
+            lines += [
                 "• Call Cyber Crime Helpline 1930.",
                 "• Report at cybercrime.gov.in"
             ]
@@ -224,6 +247,66 @@ def format_screenshot_result(data: dict, is_senior: bool = False) -> str:
     # Classify scam type
     is_df = deepfake.get("is_deepfake", False)
     risk_level = "High Risk" if ts.get("risk_level") == "HIGH" else "Be Careful" if ts.get("risk_level") == "MEDIUM" else "Safe"
+    
+    # Prioritize dynamic findings from the pipeline and translate technical jargon to layman terms
+    reasons = ts.get("confidence_reasoning", [])
+    if reasons:
+        summary = ts.get("verdict") or {
+            "High Risk": "We believe this payment proof is fake and not trustworthy.",
+            "Be Careful": "We found suspicious signs in this payment proof.",
+            "Safe": "We believe this payment proof is authentic and safe."
+        }.get(risk_level, "Suspicious activity detected.")
+        
+        replacements = {
+            "EXIF metadata": "hidden file history details",
+            "EXIF": "file history",
+            "metadata": "hidden file details",
+            "steganography": "hidden text/images",
+            "pHash": "visual layout fingerprint",
+            "perceptual hash": "visual template",
+            "VPA handle": "UPI address suffix",
+            "VPA": "UPI payment ID",
+            "Razorpay live check": "live payment network verification",
+            "baseline alignment": "text spacing alignment check",
+            "ELA": "digital editing compression test",
+            "compression mismatch": "evidence of local editing",
+            "authenticity check": "security template match"
+        }
+        
+        # Compile a single regex matching word boundaries for any key, sorted by length descending
+        sorted_keys = sorted(replacements.keys(), key=len, reverse=True)
+        pattern = re.compile("|".join(r"\b{}\b".format(re.escape(k)) for k in sorted_keys), re.IGNORECASE)
+
+        layman_reasons = []
+        for r in reasons:
+            lr = pattern.sub(lambda m: replacements[next(k for k in sorted_keys if k.lower() == m.group(0).lower())], r)
+            layman_reasons.append(lr)
+            
+        why_concerned = "\n".join([f"• {r}" for r in layman_reasons])
+        actions = ts.get("what_to_do_next") or ts.get("recommended_actions") or []
+        
+        if risk_level == "Safe":
+            not_to_do = ["No further action required."]
+        else:
+            not_to_do = [
+                "Don't send any refund if the sender claims they sent extra money.",
+                "Don't trust SMS alerts sent from unknown mobile numbers."
+            ]
+            
+        return generate_whatsapp_response(
+            risk_level=risk_level,
+            summary=summary,
+            what_we_found=what_we_found,
+            why_concerned=why_concerned,
+            what_to_do=actions if actions else [
+                "Open your own banking app.",
+                "Check your balance directly to confirm receipt.",
+                "Do not release goods until payment reflects."
+            ],
+            what_not_to_do=not_to_do,
+            is_senior=is_senior,
+            scam_type="Fake UPI Screenshot"
+        )
     
     if risk_level == "Safe":
         return generate_whatsapp_response(

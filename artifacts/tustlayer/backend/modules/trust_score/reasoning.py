@@ -16,12 +16,13 @@ PAYMENT_DOMAIN_TERMS = {
     "metadata", "timestamp", "branding", "logo", "layout", "tamper",
     "receiver", "sender", "transfer", "credit", "debit", "success",
     "failed", "pending", "verified", "validated", "authentic",
+    "valid", "correct", "match", "consistent", "id",
 }
 
 
 def _extract_nouns(text: str) -> set:
-    """Extract meaningful word tokens from a sentence (lowercase, alpha only, len>=4)."""
-    return {w for w in re.findall(r"[a-zA-Z₹]{4,}", text.lower())}
+    """Extract meaningful word tokens from a sentence (lowercase, alpha only, len>=2)."""
+    return {w for w in re.findall(r"[a-zA-Z₹]{2,}", text.lower())}
 
 
 def _is_grounded(bullet: str, data: TrustScoreInput) -> bool:

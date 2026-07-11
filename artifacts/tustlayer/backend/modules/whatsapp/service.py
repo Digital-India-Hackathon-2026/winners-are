@@ -1,6 +1,7 @@
 import httpx
 from fastapi import HTTPException
 from backend.core.config import settings
+from backend.integrations.sarvam_client import get_sarvam_client, LANGUAGE_MAP
 from backend.modules.scan_pipeline.service import get_scan_pipeline_service
 from backend.modules.qr_inspector.service import get_qr_inspector_service
 from backend.modules.document_scanner.service import get_document_scanner_service
@@ -64,3 +65,23 @@ async def analyze_media(file_bytes: bytes, content_type: str, is_senior: bool = 
             "Sorry, something went wrong while analyzing that file. "
             "Please try sending a clearer image or PDF."
         )
+
+# WhatsApp User Language Sessions
+# Keys: Twilio Phone Numbers (e.g. "whatsapp:+919876543210"), Values: Sarvam Language Codes (e.g. "hi-IN")
+USER_LANGUAGES = {}
+
+def get_user_language(phone_number: str) -> str:
+    """Gets the stored language code for a user, defaulting to English (en-IN)."""
+    return USER_LANGUAGES.get(phone_number, "en-IN")
+
+def set_user_language(phone_number: str, lang_code: str) -> None:
+    """Sets the language preference for a user."""
+    USER_LANGUAGES[phone_number] = lang_code
+
+async def translate_response(text: str, target_lang_code: str) -> str:
+    """Translates text using Sarvam Client if target language is not English."""
+    if not target_lang_code or target_lang_code == "en-IN":
+        return text
+    client = get_sarvam_client()
+    return await client.translate(text, target_lang_code)
+

@@ -38,6 +38,9 @@ class Settings(BaseSettings):
     GROQ_VISION_MODEL: str = os.getenv("GROQ_VISION_MODEL") or "meta-llama/llama-4-scout-17b-16e-instruct"
     GROQ_CHAT_MODEL: str = os.getenv("GROQ_CHAT_MODEL") or "llama-3.1-8b-instant"
 
+    # Sarvam AI
+    SARVAM_API_KEY: str = os.getenv("SARVAM_API_KEY") or ""
+
     # Twilio WhatsApp Bot
     TWILIO_ACCOUNT_SID: str = os.getenv("TWILIO_ACCOUNT_SID") or ""
     TWILIO_AUTH_TOKEN: str = os.getenv("TWILIO_AUTH_TOKEN") or ""
