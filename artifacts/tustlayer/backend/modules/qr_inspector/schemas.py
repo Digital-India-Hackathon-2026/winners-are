@@ -32,5 +32,6 @@ class QRInspectionResult(BaseModel):
 
     risk_level: str = Field("UNKNOWN", description="LOW / MEDIUM / HIGH / UNKNOWN")
     risk_signals: List[str] = Field(default_factory=list)
+    resolved_url: Optional[str] = Field(None, description="Final URL after redirect resolution")
     explanation: str = ""
     error: Optional[str] = None

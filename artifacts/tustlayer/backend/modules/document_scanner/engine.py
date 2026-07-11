@@ -289,9 +289,9 @@ class DocumentScannerEngine:
         embedded_count = 0
         page_count = 0
 
-        # Check for JavaScript & Auto-Action via raw byte signatures
-        js_found = b"/JS" in pdf_bytes or b"/JavaScript" in pdf_bytes
-        auto_action = b"/AA" in pdf_bytes or b"/OpenAction" in pdf_bytes
+        # Check for JavaScript & Auto-Action via raw byte signatures with delimiter boundaries to avoid false positives
+        js_found = bool(re.search(b'/(?:JS|JavaScript)[\\s<>\\[\\]{}/%]', pdf_bytes))
+        auto_action = bool(re.search(b'/(?:AA|OpenAction)[\\s<>\\[\\]{}/%]', pdf_bytes))
 
         # Attempt to use PyMuPDF first, fallback to pypdf
         doc_parsed = False

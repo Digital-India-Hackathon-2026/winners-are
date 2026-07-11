@@ -427,6 +427,8 @@ def format_screenshot_result(data: dict, is_senior: bool = False) -> str:
 def format_qr_result(data: dict, is_senior: bool = False) -> str:
     risk = data.get("risk_level", "UNKNOWN")
     payload = data.get("upi_payload") or {}
+    risk_signals = data.get("risk_signals", [])
+    resolved_url = data.get("resolved_url")
     
     risk_level = "High Risk" if risk == "HIGH" else "Be Careful" if risk == "MEDIUM" else "Safe"
     
@@ -437,15 +439,22 @@ def format_qr_result(data: dict, is_senior: bool = False) -> str:
     what_we_found = {
         "QR Destination": qr_destination,
         "Receiver": receiver,
-        "Amount": amount
+        "Amount": f"\u20b9{amount}" if amount else None,
     }
+    
+    # Show where QR actually redirects to
+    if resolved_url:
+        what_we_found["Redirects To"] = resolved_url
+    
+    # Use live signals from engine, or fallback to generic message
+    why_concerned = "\n".join([f"\u2022 {s}" for s in risk_signals]) if risk_signals else None
 
     if risk_level == "Safe":
         return generate_whatsapp_response(
             risk_level="Safe",
             summary="This QR code is safe and points to a valid destination.",
             what_we_found=what_we_found,
-            why_concerned="No suspicious redirection patterns or unauthorized merchant links were found.",
+            why_concerned=why_concerned or "No suspicious redirection patterns or unauthorized merchant links were found.",
             what_to_do=[
                 "Make sure you know the receiver before completing the payment.",
                 "Double-check the receiver name on the payment screen."
@@ -457,9 +466,9 @@ def format_qr_result(data: dict, is_senior: bool = False) -> str:
 
     return generate_whatsapp_response(
         risk_level=risk_level,
-        summary="We found this QR code points to a suspicious destination.",
+        summary="We found this QR code points to a suspicious destination. Do NOT scan this with any payment app.",
         what_we_found=what_we_found,
-        why_concerned="The QR destination address is unverified and could attempt to withdraw money from your account.",
+        why_concerned=why_concerned or "The QR destination address is unverified and could attempt to withdraw money from your account.",
         what_to_do=[
             "Do not scan this QR code using any payment app.",
             "Ask the sender to pay using standard mobile number transfer instead."
@@ -469,7 +478,7 @@ def format_qr_result(data: dict, is_senior: bool = False) -> str:
             "Remember: UPI PIN is only for paying, never for receiving money."
         ],
         is_senior=is_senior,
-        scam_type="Fake QR Code"
+        scam_type="Suspicious QR Code"
     )
 
 

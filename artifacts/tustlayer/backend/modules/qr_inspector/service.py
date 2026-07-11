@@ -81,6 +81,7 @@ class QRInspectorService:
                 suspicious_uri=analysis["suspicious_uri"],
                 risk_level=risk_level,
                 risk_signals=all_signals,
+                resolved_url=analysis.get("resolved_url"),
                 explanation=explanation,
             )
 

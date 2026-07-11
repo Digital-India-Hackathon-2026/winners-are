@@ -111,6 +111,7 @@ class QRInspectorEngine:
         amount_hardcoded = False
         unknown_vpa = False
         suspicious_uri = False
+        final_url = None
 
         if qr_text.lower().startswith("upi://"):
             is_upi = True
@@ -159,8 +160,6 @@ class QRInspectorEngine:
 
         elif re.match(r'https?://', qr_text, re.I):
             import httpx
-            suspicious_uri = True
-            risk_signals.append(f"QR contains URL (not UPI): {qr_text[:80]}")
             final_url = qr_text
             
             try:
@@ -170,22 +169,29 @@ class QRInspectorEngine:
                     
                     if final_url != qr_text:
                         print(f"[QR-INSPECTOR] Resolved redirect: {qr_text} -> {final_url}")
-                        risk_signals.append(f"QR redirects to: {final_url[:80]}")
+                        risk_signals.append(f"QR redirects to: {final_url}")
                     
                     parsed_url = urlparse(final_url)
                     domain = parsed_url.netloc.lower()
                     
                     trusted_domains = [
-                        "google.com", "gpay.app.goo.gl", "phonepe.com", "paytm.com", 
-                        "paytm.in", "cred.club", "bhimupi.org.in", "super.money", 
-                        "npci.org.in", "razorpay.com", "payu.in"
+                        "google.com", "docs.google.com", "drive.google.com", "forms.google.com",
+                        "youtube.com", "linkedin.com",
+                        "gpay.app.goo.gl", "phonepe.com", "paytm.com",
+                        "paytm.in", "cred.club", "bhimupi.org.in", "super.money",
+                        "npci.org.in", "razorpay.com", "payu.in",
+                        "microsoft.com", "apple.com"
                     ]
                     
-                    is_trusted = any(domain.endswith(t) for t in trusted_domains)
+                    is_trusted = any(domain == t or domain.endswith("." + t) for t in trusted_domains)
                     if not is_trusted:
+                        suspicious_uri = True
                         risk_signals.append(f"⚠ Untrusted destination domain: {domain}")
+                    else:
+                        risk_signals.append(f"✓ QR links to trusted domain: {domain}")
             except Exception as redirect_err:
                 print(f"[QR-INSPECTOR] Failed to resolve redirects: {redirect_err}")
+                suspicious_uri = True
                 risk_signals.append(f"⚠ Failed to verify URL security destination.")
 
             # Call Google Safe Browsing
@@ -215,4 +221,5 @@ class QRInspectorEngine:
             "risk_signals": risk_signals,
             "vpa_handle_valid": not unknown_vpa if is_upi else False,
             "google_safe_browsing_threat": locals().get("google_safe_browsing_threat", False),
+            "resolved_url": final_url,
         }
