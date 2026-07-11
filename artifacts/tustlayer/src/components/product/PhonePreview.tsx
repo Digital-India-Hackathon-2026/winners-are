@@ -55,10 +55,10 @@ export function PhonePreview({
     <div className="preview-panel">
       <div className="preview-phone-wrap">
         <div className="preview-phone-glow" />
-        <div className="phone-shell">
-          <div className="phone-screen">
+        <div className="product-phone-shell">
+          <div className="product-phone-screen">
             <div className="phone-notch" />
-            <div className="phone-topbar">
+            <div className="product-phone-topbar">
               <span>TrustLayer AI Scanner</span>
               <span className="live-dot">● ONLINE</span>
             </div>
