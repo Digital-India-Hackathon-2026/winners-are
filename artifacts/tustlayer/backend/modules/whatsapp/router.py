@@ -72,8 +72,23 @@ async def whatsapp_webhook(request: Request):
     
     twiml = MessagingResponse()
 
-    # Welcome message if no file is sent
+    # Welcome message or Message Scanner if no file is sent
     if num_media == 0:
+        is_greeting = clean_input in ["hi", "hello", "hey", "help", "welcome", "start"]
+        if not is_greeting and len(inbound_text) > 3:
+            try:
+                from backend.modules.message_scanner.service import get_message_scanner_service
+                msg_service = get_message_scanner_service()
+                scan_res = await msg_service.scan_message(inbound_text)
+                reply_text = scan_res.whatsapp_response
+            except Exception as e:
+                print(f"[WhatsApp] Message scanner error: {e}")
+                reply_text = "I encountered an error trying to analyze your message."
+
+            translated_reply = await translate_response(reply_text, user_lang)
+            twiml.message(translated_reply)
+            return Response(content=str(twiml), media_type="application/xml")
+
         if is_senior:
             welcome_msg = (
                 "Hello! I am TrustLayer.\n\n"

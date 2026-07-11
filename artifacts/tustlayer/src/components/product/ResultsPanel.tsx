@@ -285,6 +285,132 @@ export function ResultsPanel({ results, isScanning, onClear }: ResultsPanelProps
     );
   }
 
+  // 0. Message Scanner Results
+  if (results.file_type === "message" && results.message_result) {
+    const msg = results.message_result;
+    return (
+      <div className="product-panel results-panel">
+        <div className="product-panel-header">
+          <span className="dot" /> Message Forensic Results
+        </div>
+        
+      <div className="results-panel-content">
+        <div className="result-block" style={{ textAlign: "center", padding: "24px 0 8px" }}>
+          <div className="result-score-number" style={{
+            color: msg.verdict === "Likely Fraud" ? "#ff4d2e" : msg.verdict === "Needs Verification" ? "#ffb22e" : "#31f58b"
+          }}>
+            {msg.score ? `${Math.round(msg.score)}%` : msg.verdict}
+          </div>
+          <div className="result-score-label">Trust Score</div>
+          <div className="result-verdict" style={{
+            borderColor: msg.verdict === "Likely Fraud" ? "#ff4d2e55" : msg.verdict === "Needs Verification" ? "#ffb22e55" : "#31f58b55",
+            background: msg.verdict === "Likely Fraud" ? "#ff4d2e0a" : msg.verdict === "Needs Verification" ? "#ffb22e0a" : "#31f58b0a"
+          }}>
+            <span>Verdict</span>
+            <strong style={{
+              color: msg.verdict === "Likely Fraud" ? "#ff4d2e" : msg.verdict === "Needs Verification" ? "#ffb22e" : "#31f58b"
+            }}>
+              {msg.verdict === "Likely Fraud" ? "❌ Likely Fraud" : msg.verdict === "Needs Verification" ? "⚠ Needs Verification" : "✓ Verified"}
+            </strong>
+          </div>
+        </div>
+
+        <div className="result-block">
+          <h4 className="result-block-title">Message Summary</h4>
+          <p className="result-reason" style={{ color: "var(--foreground)", fontSize: "0.8rem", lineHeight: 1.4 }}>
+            {msg.summary}
+          </p>
+        </div>
+
+        {/* Extracted details */}
+        <div className="result-block">
+          <h4 className="result-block-title">Extracted Details</h4>
+          {msg.urls_found && msg.urls_found.length > 0 && (
+            <div className="result-row" style={{ display: "block", marginBottom: "8px" }}>
+              <span className="label" style={{ display: "block", marginBottom: "4px" }}>Websites Found:</span>
+              <ul style={{ paddingLeft: "16px", margin: 0 }}>
+                {msg.url_analysis.map((u: any, idx: number) => (
+                  <li key={idx} style={{ fontSize: "0.72rem", color: u.status === "Likely Fraud" ? "#ff4d2e" : u.status === "Needs Verification" ? "#ffb22e" : "#31f58b", wordBreak: "break-all" }}>
+                    <strong>{u.url}</strong> - {u.status} ({u.reason})
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {msg.phone_numbers_found && msg.phone_numbers_found.length > 0 && (
+            <div className="result-row">
+              <span className="label">Phone Numbers Found:</span>
+              <span className="value" style={{ color: "var(--signal)" }}>
+                {msg.phone_numbers_found.join(", ")}
+              </span>
+            </div>
+          )}
+          {msg.upi_ids_found && msg.upi_ids_found.length > 0 && (
+            <div className="result-row">
+              <span className="label">UPI IDs Found:</span>
+              <span className="value" style={{ color: "var(--signal)", fontFamily: "var(--font-mono)" }}>
+                {msg.upi_ids_found.join(", ")}
+              </span>
+            </div>
+          )}
+          {msg.emails_found && msg.emails_found.length > 0 && (
+            <div className="result-row">
+              <span className="label">Emails Found:</span>
+              <span className="value">{msg.emails_found.join(", ")}</span>
+            </div>
+          )}
+        </div>
+
+        {msg.concerns && msg.concerns.length > 0 && (
+          <div className="result-block">
+            <h4 className="result-block-title">Why We're Concerned</h4>
+            <ul style={{ paddingLeft: "16px", margin: 0 }}>
+              {msg.concerns.map((con: string, idx: number) => (
+                <li key={idx} className="result-reason" style={{ borderLeftColor: "var(--ember)", paddingLeft: "8px", margin: "4px 0" }}>
+                  {con}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {msg.action_steps && msg.action_steps.length > 0 && (
+          <div className="result-block">
+            <h4 className="result-block-title">What You Should Do</h4>
+            <ul style={{ paddingLeft: "16px", margin: 0, listStyleType: "none" }}>
+              {msg.action_steps.map((act: string, idx: number) => (
+                <li key={idx} className="result-action" style={{ borderLeftColor: "var(--success)", paddingLeft: "8px", margin: "4px 0" }}>
+                  ✓ {act}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {msg.whatsapp_response && (
+          <div className="result-block">
+            <h4 className="result-block-title">WhatsApp Bot Response Preview</h4>
+            <pre style={{
+              background: "rgba(0,0,0,0.25)",
+              border: "1px solid var(--border)",
+              borderRadius: "8px",
+              padding: "12px",
+              fontSize: "0.7rem",
+              color: "#25d366",
+              whiteSpace: "pre-wrap",
+              wordBreak: "break-all",
+              fontFamily: "var(--font-mono)",
+              lineHeight: 1.4
+            }}>
+              {msg.whatsapp_response}
+            </pre>
+          </div>
+        )}
+      </div>
+      </div>
+    );
+  }
+
   // 1. PDF File Results
   if (results.file_type === "pdf" && results.document_result) {
     const doc = results.document_result;

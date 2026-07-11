@@ -90,6 +90,25 @@ async def stream_scan(
         )
 
 
+class MessageScanRequest(BaseModel):
+    message: str
+
+@router.post("/message")
+async def execute_message_scan(
+    payload: MessageScanRequest,
+    context: dict = Depends(get_session_or_user)
+):
+    """
+    Plain text, WhatsApp, SMS message threat scanner endpoint.
+    Runs language, URL, phone, UPI, email, keyword analyses, reputation lookups,
+    and returns a structured safety summary + WhatsApp formatted response.
+    """
+    from backend.modules.message_scanner.service import get_message_scanner_service
+    service = get_message_scanner_service()
+    res = await service.scan_message(payload.message)
+    return res
+
+
 @router.post("/unified")
 async def execute_unified_scan(
     response: Response,

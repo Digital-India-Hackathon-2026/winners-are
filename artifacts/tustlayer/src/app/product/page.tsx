@@ -8,12 +8,8 @@ import { useLenisScroll } from "@/hooks/useLenisScroll";
 export default function ProductPage() {
   useLenisScroll();
 
-  const [uploadedImage, setUploadedImage] = useState<string | null>(null);
-  const [selectedFile,  setSelectedFile]  = useState<File | null>(null);
-  const [uploadedName,  setUploadedName]  = useState<string>("");
-  const [isScanning,    setIsScanning]    = useState<boolean>(false);
-  const [scanResults,   setScanResults]   = useState<any>(null);
-  const [errorMsg,      setErrorMsg]      = useState<string | null>(null);
+  const [messageText, setMessageText] = useState<string>("");
+  const [activeTab, setActiveTab] = useState<"file" | "message">("file");
 
   const handleFileSelect = (file: File) => {
     const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/svg+xml", "application/pdf"];
@@ -59,6 +55,7 @@ export default function ProductPage() {
     setUploadedName("");
     setScanResults(null);
     setErrorMsg(null);
+    setMessageText("");
   };
 
   const handleScan = async () => {
@@ -68,10 +65,8 @@ export default function ProductPage() {
     try {
       const formData = new FormData();
       if (selectedFile) {
-        // Direct multipart upload — no storage intermediary needed
         formData.append("file", selectedFile, selectedFile.name);
       } else {
-        // Demo/SVG fallback: convert data URL → blob
         const blob = await (await fetch(uploadedImage!)).blob();
         formData.append("file", blob, uploadedName || "screenshot.png");
       }
@@ -95,6 +90,32 @@ export default function ProductPage() {
     }
   };
 
+  const handleMessageScan = async () => {
+    if (!messageText || !messageText.trim()) return;
+    setIsScanning(true);
+    setErrorMsg(null);
+    setScanResults(null);
+    try {
+      const response = await fetch("/api/v1/scan/message", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: messageText })
+      });
+      if (!response.ok) {
+        const errBody = await response.text();
+        let detail = `HTTP ${response.status}`;
+        try { detail = JSON.parse(errBody).detail || detail; } catch {}
+        throw new Error(detail);
+      }
+      const data = await response.json();
+      setScanResults({ file_type: "message", message_result: data });
+    } catch (err: any) {
+      console.error("Message scan failed:", err);
+      setErrorMsg(err.message || "Message scan failed. Please try again.");
+    } finally {
+      setIsScanning(false);
+    }
+  };
 
   const handleLoadDemo = () => {
     setSelectedFile(null);
@@ -139,6 +160,11 @@ export default function ProductPage() {
           onLoadDemo={handleLoadDemo}
           onClear={handleClear}
           errorMsg={errorMsg}
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          messageText={messageText}
+          setMessageText={setMessageText}
+          onMessageScan={handleMessageScan}
         />
         <ResultsPanel results={scanResults} isScanning={isScanning} onClear={handleClear} />
       </div>
