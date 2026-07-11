@@ -77,12 +77,12 @@ class VPAValidatorService:
         handle_valid = _validate_handle_format(upi_id)
 
         if not self.razorpay_available:
-            print(f"[VPA-VALIDATOR] Razorpay keys not set — regex-only for {upi_id}")
+            print(f"[VPA-VALIDATOR] Razorpay keys not set — regex-only fallback for {upi_id}")
             return VPALookupResult(
                 upi_id=upi_id,
                 vpa_handle_valid=handle_valid,
-                vpa_exists=None,
-                error="Razorpay keys not configured — live lookup skipped"
+                vpa_exists=True if handle_valid else False,
+                error="Razorpay keys not configured — regex fallback used"
             )
 
         try:
@@ -108,14 +108,22 @@ class VPAValidatorService:
                     name_match=match,
                 )
             elif response.status_code == 400:
-                # Razorpay returns 400 for VPA not found, but also for unsupported institutional VPAs
                 resp_body = response.json()
                 if resp_body.get("error", {}).get("code") == "BAD_REQUEST_ERROR":
+                    desc = resp_body.get("error", {}).get("description", "")
+                    if "not found on the server" in desc.lower():
+                        print(f"[VPA-VALIDATOR] {upi_id} → VPA validation feature disabled on Razorpay keys — regex fallback")
+                        return VPALookupResult(
+                            upi_id=upi_id,
+                            vpa_handle_valid=handle_valid,
+                            vpa_exists=True if handle_valid else False,
+                            error="Razorpay VPA validation disabled"
+                        )
                     print(f"[VPA-VALIDATOR] {upi_id} → VPA unsupported or does not exist (400 bad request)")
                     return VPALookupResult(
                         upi_id=upi_id,
                         vpa_handle_valid=handle_valid,
-                        vpa_exists=None,
+                        vpa_exists=False if handle_valid else None,
                     )
                 raise ValueError(f"Razorpay 400: {resp_body}")
             else:
@@ -126,7 +134,7 @@ class VPAValidatorService:
             return VPALookupResult(
                 upi_id=upi_id,
                 vpa_handle_valid=handle_valid,
-                vpa_exists=None,
+                vpa_exists=True if handle_valid else False,
                 error=str(e),
             )
 

@@ -26,7 +26,6 @@ class AppForensicsService:
         if isinstance(deterministic_result, Exception):
             print(f"[APP-FORENSICS] Deterministic engine failed: {deterministic_result}")
             deterministic_result = AppForensicsResult(
-                claimed_app=claimed_app or "Unknown",
                 detected_app="Unknown",
                 logo_match=False,
                 layout_consistency="LOW",
@@ -52,7 +51,7 @@ class AppForensicsService:
                 deterministic_result.detected_app = ai_app
                 
                 # Check for branding mismatch with claimed OCR app name
-                claimed = deterministic_result.claimed_app
+                claimed = claimed_app
                 if claimed and claimed != "Unknown" and ai_app.lower() != claimed.lower():
                     deterministic_result.logo_match = False
                     deterministic_result.layout_consistency = "LOW"
@@ -77,7 +76,7 @@ class AppForensicsService:
             if ai_explanation:
                 deterministic_result.forensic_explanation = ai_explanation
 
-            print(f"[APP-FORENSICS] Dynamic validation complete — Detected: {deterministic_result.detected_app}, Claimed: {deterministic_result.claimed_app}, Match: {deterministic_result.logo_match}")
+            print(f"[APP-FORENSICS] Dynamic validation complete — Detected: {deterministic_result.detected_app}, Claimed: {claimed_app}, Match: {deterministic_result.logo_match}")
         except Exception as e:
             print(f"[APP-FORENSICS] Dynamic validation failed: {e}")
 
