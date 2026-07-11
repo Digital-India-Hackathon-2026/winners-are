@@ -50,39 +50,54 @@
 }
 
 [data-theme="light"] {
+  /* ── Core palette ── */
   --bg: #ffffff;
-  --bg-elevated: #f8fafc;
-  --bg-card: rgba(15, 23, 42, 0.03);
-  --bg-glass: rgba(255, 255, 255, 0.95);
+  --bg-elevated: #f5f9ff;
+  --bg-card: rgba(10, 132, 255, 0.04);
+  --bg-glass: rgba(255, 255, 255, 0.96);
+
+  /* ── Text ── */
   --foreground: #0f172a;
   --foreground-muted: #475569;
   --foreground-dim: #94a3b8;
-  --signal: #0ea5e9;
-  --signal-glow: rgba(14, 165, 233, 0.15);
-  --ember: #ef4444;
-  --ember-glow: rgba(239, 68, 68, 0.15);
-  --cyan: #06b6d4;
-  --cyan-glow: rgba(6, 182, 212, 0.15);
+
+  /* ── Accent (TrustLayer Blue) ── */
+  --signal: #0a84ff;
+  --signal-glow: rgba(10, 132, 255, 0.18);
+  --signal-grad-end: #0060e0;
+
+  /* ── Danger / Ember ── */
+  --ember: #ff4d4f;
+  --ember-glow: rgba(255, 77, 79, 0.15);
+
+  /* ── Cyan ── */
+  --cyan: #00b4d8;
+  --cyan-glow: rgba(0, 180, 216, 0.15);
+
+  /* ── Borders ── */
   --border: #e2e8f0;
-  --border-active: #0ea5e9;
+  --border-active: #0a84ff;
+
+  /* ── Navbar ── */
   --nav-bg: rgba(255, 255, 255, 0.98);
 
-  /* Clean, flat backgrounds for light mode */
-  --hero-bg-grad: #ffffff;
-  --phone-shell-grad: #f1f5f9;
-  --phone-screen-grad: #ffffff;
-  --phone-notch: #e2e8f0;
-  --scam-bg-grad: #f8fafc;
-  --forensic-bg-grad: #ffffff;
-  --verdict-bg-grad: #f8fafc;
-  --how-it-works-grad: #ffffff;
-  --signal-grad-end: #0284c7;
+  /* ── Section backgrounds ── */
+  --hero-bg-grad: linear-gradient(160deg, #ffffff 0%, #f0f7ff 55%, #e8f3ff 100%);
+  --phone-shell-grad: linear-gradient(155deg, #dbeafe, #eff6ff 54%, #dbeafe);
+  --phone-screen-grad: linear-gradient(180deg, #f8fbff 0%, #ffffff 54%, #f0f7ff 100%);
+  --phone-notch: #cbd5e1;
+  --scam-bg-grad: linear-gradient(180deg, #f8fafc 0%, #f0f7ff 50%, #f8fafc 100%);
+  --forensic-bg-grad: linear-gradient(180deg, #ffffff 0%, #f5f9ff 50%, #ffffff 100%);
+  --verdict-bg-grad: linear-gradient(180deg, #f8fafc 0%, #eef5ff 50%, #f8fafc 100%);
+  --how-it-works-grad: linear-gradient(180deg, #ffffff, #f5f9ff);
+
+  /* ── Semantic ── */
   --success: #10b981;
   --warn: #f59e0b;
-  --danger-light: #ef4444;
+  --danger-light: #ff4d4f;
   --text-inverse: #ffffff;
-  --shadow-rgb: 15, 23, 42;
-  --tab-bg: rgba(15, 23, 42, 0.04);
+  --shadow-rgb: 10, 30, 80;
+  --tab-bg: rgba(10, 132, 255, 0.05);
 }
 
 @theme inline {
@@ -131,6 +146,11 @@ body {
   background: var(--nav-bg);
   backdrop-filter: blur(12px);
   pointer-events: auto;
+}
+
+[data-theme="light"] .site-nav {
+  border-bottom: 1px solid #e8edf5;
+  box-shadow: 0 1px 4px rgba(10, 30, 80, 0.06);
 }
 
 .nav-brand {
@@ -210,6 +230,17 @@ body {
   box-shadow: 0 0 22px var(--signal-glow) !important;
 }
 
+[data-theme="light"] .nav-cta {
+  background: #0a84ff !important;
+  color: #ffffff !important;
+  border-color: #0a84ff !important;
+}
+
+[data-theme="light"] .nav-cta:hover {
+  background: #0060e0 !important;
+  box-shadow: 0 4px 16px rgba(10, 132, 255, 0.36) !important;
+}
+
 @media (max-width: 640px) {
   .nav-links { gap: 14px; }
   .nav-links a { font-size: 0.68rem; letter-spacing: 0.06em; }
@@ -267,6 +298,14 @@ body {
   background:
     radial-gradient(circle at 72% 20%, rgba(255, 77, 46, 0.18), transparent 38vw),
     radial-gradient(circle at 18% 78%, rgba(52, 230, 255, 0.1), transparent 32vw),
+    var(--hero-bg-grad);
+}
+
+[data-theme="light"] .hero-section {
+  background:
+    radial-gradient(ellipse at 70% 10%, rgba(10, 132, 255, 0.12), transparent 42vw),
+    radial-gradient(ellipse at 20% 80%, rgba(0, 180, 216, 0.09), transparent 34vw),
+    radial-gradient(ellipse at 50% 50%, rgba(10, 132, 255, 0.04), transparent 60vw),
     var(--hero-bg-grad);
 }
 
@@ -372,6 +411,28 @@ body {
   background: rgba(255, 248, 238, 0.04);
 }
 
+[data-theme="light"] .btn-ghost {
+  border-color: #cbd5e1;
+  color: #334155;
+}
+
+[data-theme="light"] .btn-ghost:hover {
+  border-color: #0a84ff;
+  color: #0a84ff;
+  background: rgba(10, 132, 255, 0.05);
+}
+
+[data-theme="light"] .btn-primary {
+  background: #0a84ff;
+  color: #ffffff;
+  box-shadow: 0 4px 18px rgba(10, 132, 255, 0.32), 0 1px 4px rgba(10, 132, 255, 0.18);
+}
+
+[data-theme="light"] .btn-primary:hover {
+  background: #0060e0;
+  box-shadow: 0 8px 28px rgba(10, 132, 255, 0.42), 0 2px 8px rgba(10, 132, 255, 0.22);
+}
+
 /* Hero phone column */
 .hero-phone-wrap {
   position: relative;
@@ -392,6 +453,11 @@ body {
   animation: glowPulse 4.5s ease-in-out infinite alternate;
 }
 
+[data-theme="light"] .hero-phone-glow {
+  background: radial-gradient(circle, rgba(10, 132, 255, 0.12) 0%, rgba(0, 180, 216, 0.14) 32%, rgba(10, 132, 255, 0.07) 56%, transparent 76%);
+  filter: blur(36px);
+}
+
 /* Phone shell (Cinematic landing mockups) */
 .phone-shell {
   position: relative;
@@ -409,6 +475,18 @@ body {
   padding: clamp(8px, 1vw, 14px);
   transform-style: preserve-3d;
   will-change: transform;
+}
+
+[data-theme="light"] .phone-shell {
+  border: 1px solid rgba(10, 132, 255, 0.14);
+  background:
+    linear-gradient(140deg, rgba(255, 255, 255, 0.9), rgba(219, 234, 254, 0.5) 22%, rgba(239, 246, 255, 0.98) 50%),
+    var(--phone-shell-grad);
+  box-shadow:
+    0 32px 72px rgba(10, 30, 80, 0.14),
+    0 0 60px rgba(10, 132, 255, 0.16),
+    0 0 0 1px rgba(10, 132, 255, 0.08),
+    inset 0 0 0 7px rgba(255, 255, 255, 0.7);
 }
 
 .phone-screen {
